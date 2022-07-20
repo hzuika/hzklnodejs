@@ -1,0 +1,19 @@
+{
+  "name": "hzkl",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hzuika/hzklnodejs.git"
+  },
+  "author": "hzuika",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hzuika/hzklnodejs/issues"
+  },
+  "homepage": "https://github.com/hzuika/hzklnodejs#readme"
+}
