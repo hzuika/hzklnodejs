@@ -11,7 +11,7 @@ const existPath = async (filepath) => {
 };
 
 const makeDirectory = async (dirpath) => {
-  fs.mkdir(dirpath, { recursive: true });
+  return fs.mkdir(dirpath, { recursive: true });
 };
 
 const readFileText = async (filepath) => {
@@ -23,12 +23,12 @@ const readFileBinary = async (filepath) => {
 };
 
 const writeFileText = async (filepath, data) => {
-  makeDirectory(getDirectoryName(filepath));
+  await makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, data, "utf8");
 };
 
 const writeFileBinary = async (filepath, data) => {
-  makeDirectory(getDirectoryName(filepath));
+  await makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, data, "binary");
 };
 
