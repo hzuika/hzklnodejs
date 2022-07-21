@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/hzuika/hzklnodejs/issues"
   },
-  "homepage": "https://github.com/hzuika/hzklnodejs#readme"
+  "homepage": "https://github.com/hzuika/hzklnodejs#readme",
+  "dependencies": {
+    "googleapis": "^105.0.0"
+  }
 }
