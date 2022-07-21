@@ -22,6 +22,11 @@ const readFileBinary = async (filepath) => {
   return fs.readFile(filepath, "binary");
 };
 
+// import jsonData from "./filepath.json" assert {type: "json"}
+const readFileJson = async (filepath) => {
+  return getJsonFromString(await readFileText(filepath));
+};
+
 const writeFileText = async (filepath, data) => {
   makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, data, "utf8");
@@ -30,6 +35,19 @@ const writeFileText = async (filepath, data) => {
 const writeFileBinary = async (filepath, data) => {
   makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, data, "binary");
+};
+
+const getStringFromJson = (json) => {
+  return JSON.stringify(json, null, 2);
+};
+
+const getJsonFromString = (string) => {
+  return JSON.parse(string);
+};
+
+const writeFileJson = async (filepath, json) => {
+  makeDirectory(getDirectoryName(filepath));
+  fs.writeFile(filepath, getStringFromJson(json), "utf8");
 };
 
 const getDirectoryName = (filepath) => {
@@ -55,8 +73,11 @@ export {
   readFileBinary,
   writeFileText,
   writeFileBinary,
+  writeFileJson,
   getDirectoryName,
   getExtension,
   getFileName,
   getFilenameWithoutExtension,
+  getStringFromJson,
+  getJsonFromString,
 };
