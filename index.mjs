@@ -53,7 +53,7 @@ const writeFileJson = async (filepath, json) => {
 };
 
 const getDirectoryName = (filepath) => {
-  return Path.parse(filepath).dir;
+  return Path.dirname(filepath)
 };
 
 const getExtension = (filepath) => {
