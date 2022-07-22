@@ -2,6 +2,8 @@ import { promises as fs } from "fs";
 import Path from "path";
 import { google } from "googleapis";
 const youtube = google.youtube("v3");
+import axios from "axios";
+import assert from "node:assert/strict";
 
 const existPath = async (filepath) => {
   try {
@@ -53,7 +55,7 @@ const writeFileJson = async (filepath, json) => {
 };
 
 const getDirectoryName = (filepath) => {
-  return Path.dirname(filepath)
+  return Path.dirname(filepath);
 };
 
 const getExtension = (filepath) => {
@@ -77,12 +79,96 @@ const getChunkFromArray = (array, size) => {
   );
 };
 
-class Youtube {
+const getHtmlFromUrl = async (url) => {
+  const res = await axios.get(url);
+  return res.data;
+};
 
+const replaceString = (inStr, n, newStr) => {
+  return inStr.substring(0, n) + newStr + inStr.substring(n + 1);
+};
+
+// [ { a: 1, b: 2 }, { a: 3, b: 4 } ]
+// a,b
+// 1,2
+// 3,4
+const getTableFromJson = (json, delimiter) => {
+  const header = Object.keys(json[0]).join(delimiter) + "\n";
+  const body = json.map((d) => Object.values(d).join(delimiter)).join("\n");
+  return header + body;
+};
+
+const getCsvFromJson = (json) => {
+  return getTableFromJson(json, ",");
+};
+const getTsvFromJson = (json) => {
+  return getTableFromJson(json, "\t");
+};
+
+class Youtube {
   #YOUTUBE_API_KEY;
+  #channel_id_length = 24;
+  #video_id_length = 11;
 
   constructor(apiKey) {
     this.#YOUTUBE_API_KEY = apiKey;
+  }
+
+  static getDescriptionFromApiData(apiData) {
+    return apiData.snippet.description;
+  }
+
+  static getTitleFromApiData(apiData) {
+    return apiData.snippet.title;
+  }
+
+  static getVideoIdFromPlaylistItemsApiData(apiData) {
+    return apiData.snippet.resourceId.videoId;
+  }
+
+  static getVideoUrlFromPlaylistItemsApiData(apiData) {
+    return Youtube.getUrlFromVideoId(
+      Youtube.getVideoIdFromPlaylistItemsApiData(apiData)
+    );
+  }
+
+  static searchChannelIdFromText(description) {
+    const prefix = /https:\/\/www.youtube.com\/channel\/.{24}/g;
+    return description.match(prefix);
+  }
+
+  static getChannelIdFromUrl(url) {
+    const prefix = "https://www.youtube.com/channel/";
+    assert.notStrictEqual(url.indexOf(prefix), -1);
+    return url.split(prefix)[1];
+  }
+
+  static getUploadPlaylistIdFromChannelId = (channelId) => {
+    return replaceString(channelId, 1, "U");
+  };
+  static getChannelIdFromUploadPlaylistId = (uploadPlaylistId) => {
+    return replaceString(uploadPlaylistId, 1, "C");
+  };
+
+  static getUrlFromVideoId(videoId) {
+    assert.strictEqual(videoId.length, 11);
+    return `https://www.youtube.com/watch?v=${videoId}`;
+  }
+
+  static getGameTitleFromHtml(html) {
+    const prefix = '}]},"title":{"simpleText":"';
+    if (html.indexOf(prefix) > 0) {
+      return html.split(prefix)[1].split('"')[0];
+    }
+    return "";
+  }
+
+  static async getGameTitleFromUrl(url) {
+    return getGameTitleFromHtml(await getHtmlFromUrl(url));
+  }
+
+  static async getGameTitleFromVideoId(videoId) {
+    return getGameTitleFromUrl(getUrlFromVideoId(videoId));
   }
 
   async #getApiData(params, apiCallback) {
@@ -167,9 +253,7 @@ class Youtube {
       playlistId: playlistId,
       maxResults: 50,
     };
-    return this.#getApiData(params, (p) =>
-      youtube.playlistItems.list(p)
-    );
+    return this.#getApiData(params, (p) => youtube.playlistItems.list(p));
   }
 
   async getPlaylists(
@@ -189,9 +273,7 @@ class Youtube {
       channelId: channelId,
       maxResults: 50,
     };
-    return this.#getApiData(params, (params) =>
-      youtube.playlists.list(params)
-    );
+    return this.#getApiData(params, (params) => youtube.playlists.list(params));
   }
 }
 
@@ -200,6 +282,7 @@ export {
   makeDirectory,
   readFileText,
   readFileBinary,
+  readFileJson,
   writeFileText,
   writeFileBinary,
   writeFileJson,
@@ -209,5 +292,10 @@ export {
   getFilenameWithoutExtension,
   getStringFromJson,
   getJsonFromString,
+  getHtmlFromUrl,
+  getChunkFromArray,
+  getCsvFromJson,
+  getTsvFromJson,
+  replaceString,
   Youtube,
 };

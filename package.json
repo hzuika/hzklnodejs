@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/hzuika/hzklnodejs#readme",
   "dependencies": {
+    "axios": "^0.27.2",
     "googleapis": "^105.0.0"
   }
 }
