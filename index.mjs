@@ -105,6 +105,10 @@ const getTsvFromJson = (json) => {
   return getTableFromJson(json, "\t");
 };
 
+const removeDuplicatesFromArray = (array) => {
+  return [...new Set(array)];
+};
+
 class Youtube {
   #YOUTUBE_API_KEY;
   #channel_id_length = 24;
@@ -150,9 +154,30 @@ class Youtube {
     return replaceString(uploadPlaylistId, 1, "C");
   };
 
+  static getUrlFromChannelId(channelId) {
+    assert.strictEqual(channelId.length, 24);
+    return `https://www.youtube.com/channel/${channelId}`;
+  }
+
   static getUrlFromVideoId(videoId) {
     assert.strictEqual(videoId.length, 11);
     return `https://www.youtube.com/watch?v=${videoId}`;
+  }
+
+  static getAtChannelIdListFromHtml(html) {
+    const searchString =
+      /\{\"text\":\"@[^\"]+\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^\"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/channel\/(.{24})\"/g;
+    return removeDuplicatesFromArray(
+      [...html.matchAll(searchString)].map((elem) => elem[1])
+    );
+  }
+
+  static getHashTagListFromHtml(html) {
+    const searchString =
+      /\{\"text\":\"#([^\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
+    return removeDuplicatesFromArray(
+      [...html.matchAll(searchString)].map((elem) => elem[1])
+    );
   }
 
   static getGameTitleFromHtml(html) {
