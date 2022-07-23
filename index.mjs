@@ -174,7 +174,7 @@ class Youtube {
 
   static getHashTagListFromHtml(html) {
     const searchString =
-      /\{\"text\":\"#([^\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
+      /\{\"text\":\"(#[^\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
     return removeDuplicatesFromArray(
       [...html.matchAll(searchString)].map((elem) => elem[1])
     );
