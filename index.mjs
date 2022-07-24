@@ -50,7 +50,7 @@ const getJsonFromString = (string) => {
 };
 
 const writeFileJson = async (filepath, json) => {
-  makeDirectory(getDirectoryName(filepath));
+  await makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, getStringFromJson(json), "utf8");
 };
 
