@@ -322,5 +322,6 @@ export {
   getCsvFromJson,
   getTsvFromJson,
   replaceString,
+  removeDuplicatesFromArray,
   Youtube,
 };
