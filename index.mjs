@@ -141,6 +141,26 @@ class Youtube {
     return description.match(prefix);
   }
 
+  static searchCustomUrlFromText(text) {
+    const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n 　]+/g;
+    return text.match(customUrl);
+  }
+
+  static async getChannelIdFromCustomUrl(url) {
+    const html = await getHtmlFromUrl(url);
+    return Youtube.getChannelIdFromHtml(html);
+  }
+
+  static getChannelIdFromHtml(html) {
+    const searchString =
+      /<meta property=\"og:url\" content=\"https:\/\/www.youtube.com\/channel\/(.{24})\">/g;
+    const res = [...html.matchAll(searchString)];
+    if (res.length > 0) {
+      return [...html.matchAll(searchString)][0][1];
+    }
+    return "";
+  }
+
   static getChannelIdFromUrl(url) {
     const prefix = "https://www.youtube.com/channel/";
     assert.notStrictEqual(url.indexOf(prefix), -1);
