@@ -67,7 +67,7 @@ const getFileName = (filepath) => {
   return Path.parse(filepath).base;
 };
 
-const getFilenameWithoutExtension = (filepath) => {
+const getFileNameWithoutExtension = (filepath) => {
   return Path.parse(filepath).name;
 };
 
