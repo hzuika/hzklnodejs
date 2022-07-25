@@ -4,6 +4,7 @@ import { google } from "googleapis";
 const youtube = google.youtube("v3");
 import axios from "axios";
 import assert from "node:assert/strict";
+import { Client } from "@notionhq/client";
 
 const existPath = async (filepath) => {
   try {
@@ -322,6 +323,32 @@ class Youtube {
   }
 }
 
+class Notion {
+  #notion;
+
+  constructor(apiKey) {
+    this.#notion = new Client({
+      auth: apiKey,
+    });
+  }
+
+  async makeDatabase(query) {
+    return this.#notion.databases.create(query);
+  }
+
+  async makePage() {
+    return this.#notion.pages.create(query);
+  }
+
+  async getDatabase(query) {
+    return this.#notion.databases.retrieve(query);
+  }
+
+  async updatePage(query) {
+    return this.#notion.pages.update(query);
+  }
+}
+
 export {
   existPath,
   makeDirectory,
@@ -344,4 +371,5 @@ export {
   replaceString,
   removeDuplicatesFromArray,
   Youtube,
+  Notion,
 };
