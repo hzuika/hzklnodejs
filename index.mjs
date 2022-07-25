@@ -344,8 +344,31 @@ class Notion {
     return this.#notion.databases.retrieve(query);
   }
 
+  async getDatabaseFromId(id) {
+    const query = {
+      database_id: id,
+    };
+    return this.getDatabase(query);
+  }
+
+  async getPage(query) {
+    return this.#notion.pages.retrieve(query);
+  }
+
+  async getPageFromId(id) {
+    const query = {
+      page_id: id,
+    };
+    return this.getPage(query);
+  }
+
   async updatePage(query) {
     return this.#notion.pages.update(query);
+  }
+
+  static getIdFromUrl (url) {
+    const id_length = 32;
+    return new URL(url).pathname.split('/')[2].slice(-id_length);
   }
 }
 
