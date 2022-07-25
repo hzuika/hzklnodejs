@@ -361,7 +361,7 @@ export {
   getDirectoryName,
   getExtension,
   getFileName,
-  getFilenameWithoutExtension,
+  getFileNameWithoutExtension,
   getStringFromJson,
   getJsonFromString,
   getHtmlFromUrl,
