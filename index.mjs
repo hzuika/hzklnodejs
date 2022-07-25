@@ -110,6 +110,46 @@ const removeDuplicatesFromArray = (array) => {
   return [...new Set(array)];
 };
 
+const getMinuteFromHour = (hour) => {
+  return hour * 60;
+};
+
+const getSecondFromMinute = (minute) => {
+  return minute * 60;
+};
+
+const getSecondFromHour = (hour) => {
+  return getSecondFromMinute(getMinuteFromHour(hour));
+};
+
+const getMillis = (val) => {
+  return val * 1000;
+};
+
+const getMilliSecondFromHour = (hour) => {
+  return getMillis(getSecondFromHour(hour));
+};
+
+const getSign = (num) => {
+  if (num < 0) {
+    return "-";
+  } else {
+    return "+";
+  }
+};
+
+const getJapaneseIsoStringFromUtcIsoString = (utc) => {
+  const timeZoneOffsetHour = {
+    "Asia/Tokyo": +9,
+  };
+  const offset = timeZoneOffsetHour["Asia/Tokyo"];
+  const dt = new Date(utc);
+  const dt_offset = new Date(dt.getTime() + getMilliSecondFromHour(offset));
+  const offsetString =
+    getSign(offset) + String(offset).padStart(2, "0") + ":00";
+  return dt_offset.toISOString().replace("Z", offsetString);
+};
+
 class Youtube {
   #YOUTUBE_API_KEY;
   #channel_id_length = 24;
@@ -139,12 +179,20 @@ class Youtube {
 
   static searchChannelIdFromText(description) {
     const prefix = /https:\/\/www.youtube.com\/channel\/.{24}/g;
-    return description.match(prefix);
+    const data = description.match(prefix);
+    if (data == null) {
+      return [];
+    }
+    return data;
   }
 
   static searchCustomUrlFromText(text) {
     const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n 　]+/g;
-    return text.match(customUrl);
+    const data = text.match(customUrl);
+    if (data == null) {
+      return [];
+    }
+    return data;
   }
 
   static async getChannelIdFromCustomUrl(url) {
@@ -366,9 +414,9 @@ class Notion {
     return this.#notion.pages.update(query);
   }
 
-  static getIdFromUrl (url) {
+  static getIdFromUrl(url) {
     const id_length = 32;
-    return new URL(url).pathname.split('/')[2].slice(-id_length);
+    return new URL(url).pathname.split("/")[2].slice(-id_length);
   }
 }
 
@@ -393,6 +441,7 @@ export {
   getTsvFromJson,
   replaceString,
   removeDuplicatesFromArray,
+  getJapaneseIsoStringFromUtcIsoString,
   Youtube,
   Notion,
 };
