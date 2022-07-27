@@ -150,7 +150,6 @@ const getJapaneseIsoStringFromUtcIsoString = (utc) => {
   return dt_offset.toISOString().replace("Z", offsetString);
 };
 
-
 const equalArray = (array1, array2) => {
   return JSON.stringify(array1) === JSON.stringify(array2);
 };
@@ -256,18 +255,23 @@ class Youtube {
 
   static getHashTagListFromHtml(html) {
     const searchString =
-      /\{\"text\":\"(#[^\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
+      /\{\"text\":\"(#[^\u200B\u200C\u200D\uFEFF\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
     return removeDuplicatesFromArray(
       [...html.matchAll(searchString)].map((elem) => elem[1])
     );
   }
 
-  static getGameTitleFromHtml(html) {
-    const prefix = '}]},"title":{"simpleText":"';
-    if (html.indexOf(prefix) > 0) {
-      return html.split(prefix)[1].split('"')[0];
+  static getGameTitleFromHtml(text) {
+    const searchString =
+      /\{\"richMetadataRenderer\":\{\"style\":\"RICH_METADATA_RENDERER_STYLE_BOX_ART\",\"thumbnail\":\{\"thumbnails\":\[\{\"url\":\"[^\"]+\",\"width\":[0-9]+,\"height\":[0-9]+\},\{\"url\":\"[^\"]+\",\"width\":[0-9]+,\"height\":[0-9]+\}\]\},\"title\":\{\"simpleText\":\"([^\"]+)\"\},/g;
+    const result = removeDuplicatesFromArray(
+      [...text.matchAll(searchString)].map((elem) => elem[1])
+    );
+    if (result.length > 0) {
+      return result[0];
+    } else {
+      return "";
     }
-    return "";
   }
 
   static async getGameTitleFromUrl(url) {
@@ -430,8 +434,8 @@ class Notion {
   static getIdFromUrl(urlString) {
     const idLength = 32;
     const url = new URL(urlString);
-    const urlWithoutParameter =  `${url.origin}${url.pathname}`;
-    const id = urlWithoutParameter.slice(-idLength)
+    const urlWithoutParameter = `${url.origin}${url.pathname}`;
+    const id = urlWithoutParameter.slice(-idLength);
     return id;
   }
 
