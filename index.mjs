@@ -160,6 +160,12 @@ const sleep = (ms) => {
   });
 };
 
+const sortJson = (json) => {
+  return Object.fromEntries(
+    Object.entries(json).sort((a, b) => (a[0] < b[0] ? -1 : 1))
+  );
+};
+
 class Youtube {
   #YOUTUBE_API_KEY;
   #channel_id_length = 24;
@@ -474,6 +480,7 @@ export {
   getJapaneseIsoStringFromUtcIsoString,
   equalArray,
   sleep,
+  sortJson,
   Youtube,
   Notion,
 };
