@@ -427,7 +427,7 @@ class Notion {
     return this.#notion.pages.update(query);
   }
 
-  static getIdFromUrl(url) {
+  static getIdFromUrl(urlString) {
     const idLength = 32;
     const url = new URL(urlString);
     const urlWithoutParameter =  `${url.origin}${url.pathname}`;
