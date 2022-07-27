@@ -178,8 +178,7 @@ class Youtube {
   }
 
   static searchChannelIdFromText(text) {
-    const searchString =
-      /https:\/\/www.youtube.com\/channel\/(.{24})/g;
+    const searchString = /https:\/\/www.youtube.com\/channel\/(.{24})/g;
     return removeDuplicatesFromArray(
       [...text.matchAll(searchString)].map((elem) => elem[1])
     );
@@ -227,9 +226,9 @@ class Youtube {
     return `https://www.youtube.com/channel/${channelId}`;
   }
 
-  static getVideoIdFromUrl (url) {
+  static getVideoIdFromUrl(url) {
     return url.slice(-11);
-  };
+  }
 
   static getUrlFromVideoId(videoId) {
     assert.strictEqual(videoId.length, 11);
@@ -387,7 +386,7 @@ class Notion {
     return this.#notion.databases.create(query);
   }
 
-  async makePage() {
+  async makePage(query) {
     return this.#notion.pages.create(query);
   }
 
@@ -420,6 +419,10 @@ class Notion {
   static getIdFromUrl(url) {
     const id_length = 32;
     return new URL(url).pathname.split("/")[2].slice(-id_length);
+  }
+
+  static getIdFromApiResponse(response) {
+    return response.id.replace(/-/g, "");
   }
 }
 
