@@ -428,8 +428,11 @@ class Notion {
   }
 
   static getIdFromUrl(url) {
-    const id_length = 32;
-    return new URL(url).pathname.split("/")[2].slice(-id_length);
+    const idLength = 32;
+    const url = new URL(urlString);
+    const urlWithoutParameter =  `${url.origin}${url.pathname}`;
+    const id = urlWithoutParameter.slice(-idLength)
+    return id;
   }
 
   static getIdFromApiResponse(response) {
