@@ -169,6 +169,11 @@ class Youtube {
     this.#YOUTUBE_API_KEY = apiKey;
   }
 
+  static removeEtagFromApiData(apiData) {
+    let { etag, ...rest } = apiData;
+    return rest;
+  }
+
   static getDescriptionFromApiData(apiData) {
     return apiData.snippet.description;
   }
