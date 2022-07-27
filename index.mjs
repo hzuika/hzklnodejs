@@ -255,10 +255,11 @@ class Youtube {
 
   static getHashTagListFromHtml(html) {
     const searchString =
-      /\{\"text\":\"(#[^\u200B\u200C\u200D\uFEFF\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
-    return removeDuplicatesFromArray(
-      [...html.matchAll(searchString)].map((elem) => elem[1])
+      /\{\"text\":\"(#[^\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
+    const hashTags = [...html.matchAll(searchString)].map((elem) =>
+      elem[1].replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
     );
+    return removeDuplicatesFromArray(hashTags);
   }
 
   static getGameTitleFromHtml(text) {
