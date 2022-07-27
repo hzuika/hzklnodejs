@@ -150,6 +150,17 @@ const getJapaneseIsoStringFromUtcIsoString = (utc) => {
   return dt_offset.toISOString().replace("Z", offsetString);
 };
 
+
+const equalArray = (array1, array2) => {
+  return JSON.stringify(array1) === JSON.stringify(array2);
+};
+
+const sleep = (ms) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, ms);
+  });
+};
+
 class Youtube {
   #YOUTUBE_API_KEY;
   #channel_id_length = 24;
@@ -448,6 +459,8 @@ export {
   replaceString,
   removeDuplicatesFromArray,
   getJapaneseIsoStringFromUtcIsoString,
+  equalArray,
+  sleep,
   Youtube,
   Notion,
 };
