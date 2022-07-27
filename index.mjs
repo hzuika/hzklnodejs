@@ -81,7 +81,7 @@ const getChunkFromArray = (array, size) => {
 };
 
 const getHtmlFromUrl = async (url) => {
-  const res = await axios.get(url);
+  const res = await axios.get(encodeURI(url));
   return res.data;
 };
 
@@ -177,13 +177,12 @@ class Youtube {
     );
   }
 
-  static searchChannelIdFromText(description) {
-    const prefix = /https:\/\/www.youtube.com\/channel\/.{24}/g;
-    const data = description.match(prefix);
-    if (data == null) {
-      return [];
-    }
-    return data;
+  static searchChannelIdFromText(text) {
+    const searchString =
+      /https:\/\/www.youtube.com\/channel\/(.{24})/g;
+    return removeDuplicatesFromArray(
+      [...text.matchAll(searchString)].map((elem) => elem[1])
+    );
   }
 
   static searchCustomUrlFromText(text) {
@@ -227,6 +226,10 @@ class Youtube {
     assert.strictEqual(channelId.length, 24);
     return `https://www.youtube.com/channel/${channelId}`;
   }
+
+  static getVideoIdFromUrl (url) {
+    return url.slice(-11);
+  };
 
   static getUrlFromVideoId(videoId) {
     assert.strictEqual(videoId.length, 11);
