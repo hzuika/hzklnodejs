@@ -318,6 +318,16 @@ class Youtube {
     return youtubeApiData.flat();
   }
 
+  async getCommentThreads(videoId, part = ["id", "snippet", "replies"]) {
+    let params = {
+      auth: this.#YOUTUBE_API_KEY,
+      part: part.join(","),
+      videoId: videoId,
+      maxResults: 100,
+    };
+    return this.#getApiData(params, (p) => youtube.commentThreads.list(p));
+  }
+
   async getVideos(
     videoIdList,
     part = [
