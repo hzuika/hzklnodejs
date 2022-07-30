@@ -6,7 +6,7 @@ import axios from "axios";
 import assert from "node:assert/strict";
 import { Client } from "@notionhq/client";
 
-const existPath = async (filepath) => {
+const existPath = async (filepath: string) => {
   try {
     await fs.access(filepath);
     return true;
@@ -15,64 +15,64 @@ const existPath = async (filepath) => {
   }
 };
 
-const makeDirectory = async (dirpath) => {
+const makeDirectory = async (dirpath: string) => {
   return fs.mkdir(dirpath, { recursive: true });
 };
 
-const readFileText = async (filepath) => {
+const readFileText = async (filepath: string) => {
   return fs.readFile(filepath, "utf8");
 };
 
-const readFileBinary = async (filepath) => {
+const readFileBinary = async (filepath: string) => {
   return fs.readFile(filepath, "binary");
 };
 
 // import jsonData from "./filepath.json" assert {type: "json"}
-const readFileJson = async (filepath) => {
+const readFileJson = async (filepath: string) => {
   return getJsonFromString(await readFileText(filepath));
 };
 
-const writeFileText = async (filepath, data) => {
+const writeFileText = async (filepath: string, data: any) => {
   await makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, data, "utf8");
 };
 
-const writeFileBinary = async (filepath, data) => {
+const writeFileBinary = async (filepath: string, data: any) => {
   await makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, data, "binary");
 };
 
-const getStringFromJson = (json) => {
+const getStringFromJson = (json: string) => {
   return JSON.stringify(json, null, 2);
 };
 
-const getJsonFromString = (string) => {
+const getJsonFromString = (string: string) => {
   return JSON.parse(string);
 };
 
-const writeFileJson = async (filepath, json) => {
+const writeFileJson = async (filepath: string, json: any) => {
   await makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, getStringFromJson(json), "utf8");
 };
 
-const getDirectoryName = (filepath) => {
+const getDirectoryName = (filepath: string) => {
   return Path.dirname(filepath);
 };
 
-const getExtension = (filepath) => {
+const getExtension = (filepath: string) => {
   return Path.parse(filepath).ext;
 };
 
-const getFileName = (filepath) => {
+const getFileName = (filepath: string) => {
   return Path.parse(filepath).base;
 };
 
-const getFileNameWithoutExtension = (filepath) => {
+const getFileNameWithoutExtension = (filepath: string) => {
   return Path.parse(filepath).name;
 };
 
 // [1, 2, 3, 4, 5, 6, 7, 8, 9, 0], 3 => [[1,2,3],[4,5,6],[7,8,9],[0]]
-const getChunkFromArray = (array, size) => {
+const getChunkFromArray = (array: any[], size: number) => {
   return array.reduce(
     (acc, _, index) =>
       index % size ? acc : [...acc, array.slice(index, index + size)],
@@ -80,12 +80,12 @@ const getChunkFromArray = (array, size) => {
   );
 };
 
-const getHtmlFromUrl = async (url) => {
+const getHtmlFromUrl = async (url: string) => {
   const res = await axios.get(encodeURI(url));
   return res.data;
 };
 
-const replaceString = (inStr, n, newStr) => {
+const replaceString = (inStr: string, n: number, newStr: string) => {
   return inStr.substring(0, n) + newStr + inStr.substring(n + 1);
 };
 
@@ -93,44 +93,44 @@ const replaceString = (inStr, n, newStr) => {
 // a,b
 // 1,2
 // 3,4
-const getTableFromJson = (json, delimiter) => {
+const getTableFromJson = (json: any, delimiter: string) => {
   const header = Object.keys(json[0]).join(delimiter) + "\n";
-  const body = json.map((d) => Object.values(d).join(delimiter)).join("\n");
+  const body = json.map((d: any) => Object.values(d).join(delimiter)).join("\n");
   return header + body;
 };
 
-const getCsvFromJson = (json) => {
+const getCsvFromJson = (json: any) => {
   return getTableFromJson(json, ",");
 };
-const getTsvFromJson = (json) => {
+const getTsvFromJson = (json: any) => {
   return getTableFromJson(json, "\t");
 };
 
-const removeDuplicatesFromArray = (array) => {
+const removeDuplicatesFromArray = (array: any[]) => {
   return [...new Set(array)];
 };
 
-const getMinuteFromHour = (hour) => {
+const getMinuteFromHour = (hour: number) => {
   return hour * 60;
 };
 
-const getSecondFromMinute = (minute) => {
+const getSecondFromMinute = (minute: number) => {
   return minute * 60;
 };
 
-const getSecondFromHour = (hour) => {
+const getSecondFromHour = (hour: number) => {
   return getSecondFromMinute(getMinuteFromHour(hour));
 };
 
-const getMillis = (val) => {
+const getMillis = (val: number) => {
   return val * 1000;
 };
 
-const getMilliSecondFromHour = (hour) => {
+const getMilliSecondFromHour = (hour: number) => {
   return getMillis(getSecondFromHour(hour));
 };
 
-const getSign = (num) => {
+const getSign = (num: number) => {
   if (num < 0) {
     return "-";
   } else {
@@ -138,7 +138,7 @@ const getSign = (num) => {
   }
 };
 
-const getJapaneseIsoStringFromUtcIsoString = (utc) => {
+const getJapaneseIsoStringFromUtcIsoString = (utc: string) => {
   const timeZoneOffsetHour = {
     "Asia/Tokyo": +9,
   };
@@ -150,17 +150,17 @@ const getJapaneseIsoStringFromUtcIsoString = (utc) => {
   return dt_offset.toISOString().replace("Z", offsetString);
 };
 
-const equalArray = (array1, array2) => {
+const equalArray = (array1: any[], array2: any[]) => {
   return JSON.stringify(array1) === JSON.stringify(array2);
 };
 
-const sleep = (ms) => {
+const sleep = (ms: number) => {
   return new Promise((resolve, reject) => {
     setTimeout(resolve, ms);
   });
 };
 
-const sortJson = (json) => {
+const sortJson = (json: any) => {
   return Object.fromEntries(
     Object.entries(json).sort((a, b) => (a[0] < b[0] ? -1 : 1))
   );
@@ -171,61 +171,61 @@ class Youtube {
   #channel_id_length = 24;
   #video_id_length = 11;
 
-  constructor(apiKey) {
+  constructor(apiKey: string) {
     this.#YOUTUBE_API_KEY = apiKey;
   }
 
-  static removeEtagFromApiData(apiData) {
+  static removeEtagFromApiData(apiData: any) {
     let { etag, ...rest } = apiData;
     return rest;
   }
 
-  static getDescriptionFromApiData(apiData) {
+  static getDescriptionFromApiData(apiData: any) {
     return apiData.snippet.description;
   }
 
-  static getTitleFromApiData(apiData) {
+  static getTitleFromApiData(apiData: any) {
     return apiData.snippet.title;
   }
 
-  static getPublishedAtFromApiData(apiData) {
+  static getPublishedAtFromApiData(apiData: any) {
     return apiData.snippet.publishedAt;
   }
 
-  static getThumbnailFromApiData(apiData) {
+  static getThumbnailFromApiData(apiData: any) {
     return apiData.snippet.thumbnails.high.url;
   }
 
-  static getThumbnailFromChannelApiData(channelApiData) {
+  static getThumbnailFromChannelApiData(channelApiData: any) {
     return Youtube.getThumbnailFromApiData(channelApiData);
   }
 
-  static getThumbnailFromVideoApiData(videoApiData) {
+  static getThumbnailFromVideoApiData(videoApiData: any) {
     return Youtube.getThumbnailFromApiData(videoApiData);
   }
 
-  static getThumbnailFromVideoId(videoId) {
+  static getThumbnailFromVideoId(videoId: string) {
     return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
   }
 
-  static #getIdFromApiData(apiData) {
+  static #getIdFromApiData(apiData: any) {
     return apiData.id;
   }
 
-  static getChannelIdFromChannelApiData(channelApiData) {
+  static getChannelIdFromChannelApiData(channelApiData: any) {
     return Youtube.#getIdFromApiData(channelApiData);
   }
 
-  static getChannelIdFromVideoApiData(videoApiData) {
+  static getChannelIdFromVideoApiData(videoApiData: any) {
     return videoApiData.snippet.channelId;
   }
 
-  static async getChannelIdFromCustomUrl(url) {
+  static async getChannelIdFromCustomUrl(url: any) {
     const html = await getHtmlFromUrl(url);
     return Youtube.getChannelIdFromHtml(html);
   }
 
-  static getChannelIdFromHtml(html) {
+  static getChannelIdFromHtml(html: string) {
     const searchString =
       /<meta property=\"og:url\" content=\"https:\/\/www.youtube.com\/channel\/(.{24})\">/g;
     const res = [...html.matchAll(searchString)];
@@ -235,106 +235,106 @@ class Youtube {
     return "";
   }
 
-  static getChannelIdFromUrl(url) {
+  static getChannelIdFromUrl(url: string) {
     const prefix = "https://www.youtube.com/channel/";
     assert.notStrictEqual(url.indexOf(prefix), -1);
     return url.split(prefix)[1];
   }
 
-  static getChannelIdFromUploadPlaylistId = (uploadPlaylistId) => {
+  static getChannelIdFromUploadPlaylistId = (uploadPlaylistId: string) => {
     return replaceString(uploadPlaylistId, 1, "C");
   };
 
-  static getVideoIdFromVideoApiData(videoApiData) {
+  static getVideoIdFromVideoApiData(videoApiData: any) {
     return Youtube.#getIdFromApiData(videoApiData);
   }
 
-  static getVideoIdFromPlaylistItemsApiData(apiData) {
+  static getVideoIdFromPlaylistItemsApiData(apiData: any) {
     return apiData.snippet.resourceId.videoId;
   }
 
-  static getVideoIdFromVideoUrl(url) {
+  static getVideoIdFromVideoUrl(url: string) {
     return url.slice(-11);
   }
 
-  static getTitleFromVideoApiData(videoApiData) {
+  static getTitleFromVideoApiData(videoApiData: any) {
     return Youtube.getTitleFromApiData(videoApiData);
   }
 
-  static getPublishedAtFromVideoApiData(videoApiData) {
+  static getPublishedAtFromVideoApiData(videoApiData: any) {
     return Youtube.getPublishedAtFromApiData(videoApiData);
   }
 
-  static getStartTimeFromVideoApiData(videoApiData) {
+  static getStartTimeFromVideoApiData(videoApiData: any) {
     return videoApiData.liveStreamingDetails
       ? videoApiData.liveStreamingDetails.actualStartTime
       : null;
   }
 
-  static getEndTimeFromVideoApiData(videoApiData) {
+  static getEndTimeFromVideoApiData(videoApiData: any) {
     return videoApiData.liveStreamingDetails
       ? videoApiData.liveStreamingDetails.actualEndTime
       : null;
   }
 
-  static #getViewCountFromApiData(apiData) {
+  static #getViewCountFromApiData(apiData: any) {
     return apiData.statistics.viewCount;
   }
 
-  static getViewCountFromVideoApiData(videoApiData) {
+  static getViewCountFromVideoApiData(videoApiData: any) {
     return Youtube.#getViewCountFromApiData(videoApiData);
   }
 
-  static getViewCountFromChannelApiData(channelApiData) {
+  static getViewCountFromChannelApiData(channelApiData: any) {
     return Youtube.#getViewCountFromApiData(channelApiData);
   }
 
-  static #getLikeCountFromApiData(ApiData) {
+  static #getLikeCountFromApiData(ApiData: any) {
     return ApiData.statistics.likeCount;
   }
 
-  static getLikeCountFromVideoApiData(videoApiData) {
+  static getLikeCountFromVideoApiData(videoApiData: any) {
     return Youtube.#getLikeCountFromApiData(videoApiData);
   }
 
-  static #getVideoCountFromApiData(apiData) {
+  static #getVideoCountFromApiData(apiData: any) {
     return apiData.statistics.videoCount;
   }
 
-  static getVideoCountFromChannelApiData(channelApiData) {
+  static getVideoCountFromChannelApiData(channelApiData: any) {
     return Youtube.#getVideoCountFromApiData(channelApiData);
   }
 
-  static #getSubscriberCountFromApiData(apiData) {
+  static #getSubscriberCountFromApiData(apiData: any) {
     return apiData.statistics.subscriberCount;
   }
 
-  static getSubscriberCountFromChannelApiData(channelApiData) {
+  static getSubscriberCountFromChannelApiData(channelApiData: any) {
     return Youtube.#getSubscriberCountFromApiData(channelApiData);
   }
 
-  static #getBannerFromApiData(apiData) {
+  static #getBannerFromApiData(apiData: any) {
     return apiData.brandingSettings.image.bannerExternalUrl;
   }
 
-  static getBannerFromChannelApiData(channelApiData) {
+  static getBannerFromChannelApiData(channelApiData: any) {
     return Youtube.#getBannerFromApiData(channelApiData);
   }
 
-  static getVideoUrlFromPlaylistItemsApiData(apiData) {
+  static getVideoUrlFromPlaylistItemsApiData(apiData: any) {
     return Youtube.getVideoUrlFromVideoId(
       Youtube.getVideoIdFromPlaylistItemsApiData(apiData)
     );
   }
 
-  static searchChannelIdFromText(text) {
+  static searchChannelIdFromText(text: string) {
     const searchString = /https:\/\/www.youtube.com\/channel\/(.{24})/g;
     return removeDuplicatesFromArray(
       [...text.matchAll(searchString)].map((elem) => elem[1])
     );
   }
 
-  static searchCustomUrlFromText(text) {
+  static searchCustomUrlFromText(text: string) {
     const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n 　]+/g;
     const data = text.match(customUrl);
     if (data == null) {
@@ -343,21 +343,21 @@ class Youtube {
     return data;
   }
 
-  static getUploadPlaylistIdFromChannelId = (channelId) => {
+  static getUploadPlaylistIdFromChannelId = (channelId: string) => {
     return replaceString(channelId, 1, "U");
   };
 
-  static getChannelUrlFromChannelId(channelId) {
+  static getChannelUrlFromChannelId(channelId: string) {
     assert.strictEqual(channelId.length, 24);
     return `https://www.youtube.com/channel/${channelId}`;
   }
 
-  static getVideoUrlFromVideoId(videoId) {
+  static getVideoUrlFromVideoId(videoId: string) {
     assert.strictEqual(videoId.length, 11);
     return `https://www.youtube.com/watch?v=${videoId}`;
   }
 
-  static getAtChannelIdListFromHtml(html) {
+  static getAtChannelIdListFromHtml(html: string) {
     const searchString =
       /\{\"text\":\"@[^\"]+\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^\"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/channel\/(.{24})\"/g;
     return removeDuplicatesFromArray(
@@ -365,7 +365,7 @@ class Youtube {
     );
   }
 
-  static getHashTagListFromHtml(html) {
+  static getHashTagListFromHtml(html: string) {
     const searchString =
       /\{\"text\":\"(#[^\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
     const hashTags = [...html.matchAll(searchString)].map((elem) =>
@@ -374,7 +374,7 @@ class Youtube {
     return removeDuplicatesFromArray(hashTags);
   }
 
-  static getGameTitleFromHtml(text) {
+  static getGameTitleFromHtml(text: string) {
     const searchString =
       /\{\"richMetadataRenderer\":\{\"style\":\"RICH_METADATA_RENDERER_STYLE_BOX_ART\",\"thumbnail\":\{\"thumbnails\":\[\{\"url\":\"[^\"]+\",\"width\":[0-9]+,\"height\":[0-9]+\},\{\"url\":\"[^\"]+\",\"width\":[0-9]+,\"height\":[0-9]+\}\]\},\"title\":\{\"simpleText\":\"([^\"]+)\"\},/g;
     const result = removeDuplicatesFromArray(
@@ -387,16 +387,16 @@ class Youtube {
     }
   }
 
-  static async getGameTitleFromUrl(url) {
-    return getGameTitleFromHtml(await getHtmlFromUrl(url));
+  static async getGameTitleFromUrl(url: string) {
+    return Youtube.getGameTitleFromHtml(await getHtmlFromUrl(url));
   }
 
-  static async getGameTitleFromVideoId(videoId) {
-    return getGameTitleFromUrl(getUrlFromVideoId(videoId));
+  static async getGameTitleFromVideoId(videoId: string) {
+    return Youtube.getGameTitleFromUrl(Youtube.getVideoUrlFromVideoId(videoId));
   }
 
-  async #getApiData(params, apiCallback) {
-    let dataList = [];
+  async #getApiData(params: any, apiCallback: any) {
+    let dataList: any[] = [];
     params.pageToken = undefined;
     do {
       const res = await apiCallback(params);
@@ -406,12 +406,12 @@ class Youtube {
     return dataList;
   }
 
-  async #getApiDataFromIdList(idList, params, apiCallback) {
+  async #getApiDataFromIdList(idList: string[], params: any, apiCallback: any) {
     // [1].flat() == [1]
     // [[1,2]].flat() == [1,2]
     idList = [idList].flat();
     const youtubeApiData = await Promise.all(
-      getChunkFromArray(idList, 50).map((idList50) => {
+      getChunkFromArray(idList, 50).map((idList50: any[]) => {
         params.id = idList50.join(",");
         return this.#getApiData(params, apiCallback);
       })
@@ -419,18 +419,18 @@ class Youtube {
     return youtubeApiData.flat();
   }
 
-  async getCommentThreads(videoId, part = ["id", "snippet", "replies"]) {
+  async getCommentThreads(videoId: string, part = ["id", "snippet", "replies"]) {
     let params = {
       auth: this.#YOUTUBE_API_KEY,
       part: part.join(","),
       videoId: videoId,
       maxResults: 100,
     };
-    return this.#getApiData(params, (p) => youtube.commentThreads.list(p));
+    return this.#getApiData(params, (p: any) => youtube.commentThreads.list(p));
   }
 
   async getVideos(
-    videoIdList,
+    videoIdList: string[],
     part = [
       "id",
       "liveStreamingDetails",
@@ -448,13 +448,13 @@ class Youtube {
       part: part.join(","),
       maxResults: 50,
     };
-    return this.#getApiDataFromIdList(videoIdList, params, (p) =>
+    return this.#getApiDataFromIdList(videoIdList, params, (p: any) =>
       youtube.videos.list(p)
     );
   }
 
   async getChannels(
-    channelIdList,
+    channelIdList: string[],
     part = [
       "brandingSettings",
       "contentDetails",
@@ -472,13 +472,13 @@ class Youtube {
       part: part.join(","),
       maxResults: 50,
     };
-    return this.#getApiDataFromIdList(channelIdList, params, (p) =>
+    return this.#getApiDataFromIdList(channelIdList, params, (p: any) =>
       youtube.channels.list(p)
     );
   }
 
   async getPlaylistItems(
-    playlistId,
+    playlistId: string[],
     part = ["snippet", "contentDetails", "id", "status"]
   ) {
     let params = {
@@ -487,11 +487,11 @@ class Youtube {
       playlistId: playlistId,
       maxResults: 50,
     };
-    return this.#getApiData(params, (p) => youtube.playlistItems.list(p));
+    return this.#getApiData(params, (p: any) => youtube.playlistItems.list(p));
   }
 
   async getPlaylists(
-    channelId,
+    channelId: string,
     part = [
       "snippet",
       "contentDetails",
@@ -507,54 +507,54 @@ class Youtube {
       channelId: channelId,
       maxResults: 50,
     };
-    return this.#getApiData(params, (params) => youtube.playlists.list(params));
+    return this.#getApiData(params, (params: any) => youtube.playlists.list(params));
   }
 }
 
 class Notion {
   #notion;
 
-  constructor(apiKey) {
+  constructor(apiKey: string) {
     this.#notion = new Client({
       auth: apiKey,
     });
   }
 
-  async makeDatabase(query) {
+  async makeDatabase(query: any) {
     return this.#notion.databases.create(query);
   }
 
-  async makePage(query) {
+  async makePage(query: any) {
     return this.#notion.pages.create(query);
   }
 
-  async getDatabase(query) {
+  async getDatabase(query: any) {
     return this.#notion.databases.retrieve(query);
   }
 
-  async getDatabaseFromId(id) {
+  async getDatabaseFromId(id: string) {
     const query = {
       database_id: id,
     };
     return this.getDatabase(query);
   }
 
-  async getPage(query) {
+  async getPage(query: any) {
     return this.#notion.pages.retrieve(query);
   }
 
-  async getPageFromId(id) {
+  async getPageFromId(id: string) {
     const query = {
       page_id: id,
     };
     return this.getPage(query);
   }
 
-  async updatePage(query) {
+  async updatePage(query: any) {
     return this.#notion.pages.update(query);
   }
 
-  static getIdFromUrl(urlString) {
+  static getIdFromUrl(urlString: string) {
     const idLength = 32;
     const url = new URL(urlString);
     const urlWithoutParameter = `${url.origin}${url.pathname}`;
@@ -562,7 +562,7 @@ class Notion {
     return id;
   }
 
-  static getIdFromApiResponse(response) {
+  static getIdFromApiResponse(response: any) {
     return response.id.replace(/-/g, "");
   }
 }
