@@ -95,7 +95,9 @@ const replaceString = (inStr: string, n: number, newStr: string) => {
 // 3,4
 const getTableFromJson = (json: any, delimiter: string) => {
   const header = Object.keys(json[0]).join(delimiter) + "\n";
-  const body = json.map((d: any) => Object.values(d).join(delimiter)).join("\n");
+  const body = json
+    .map((d: any) => Object.values(d).join(delimiter))
+    .join("\n");
   return header + body;
 };
 
@@ -176,7 +178,7 @@ class Youtube {
   }
 
   static removeEtagFromApiData(apiData: any) {
-    let { etag, ...rest } = apiData;
+    const { etag, ...rest } = apiData;
     return rest;
   }
 
@@ -227,7 +229,7 @@ class Youtube {
 
   static getChannelIdFromHtml(html: string) {
     const searchString =
-      /<meta property=\"og:url\" content=\"https:\/\/www.youtube.com\/channel\/(.{24})\">/g;
+      /<meta property="og:url" content="https:\/\/www.youtube.com\/channel\/(.{24})">/g;
     const res = [...html.matchAll(searchString)];
     if (res.length > 0) {
       return [...html.matchAll(searchString)][0][1];
@@ -335,7 +337,7 @@ class Youtube {
   }
 
   static searchCustomUrlFromText(text: string) {
-    const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n 　]+/g;
+    const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n \u3000]+/g;
     const data = text.match(customUrl);
     if (data == null) {
       return [];
@@ -359,7 +361,7 @@ class Youtube {
 
   static getAtChannelIdListFromHtml(html: string) {
     const searchString =
-      /\{\"text\":\"@[^\"]+\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^\"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/channel\/(.{24})\"/g;
+      /\{"text":"@[^"]+","navigationEndpoint":\{"clickTrackingParams":"[^"]+","commandMetadata":\{"webCommandMetadata":\{"url":"\/channel\/(.{24})"/g;
     return removeDuplicatesFromArray(
       [...html.matchAll(searchString)].map((elem) => elem[1])
     );
@@ -367,16 +369,16 @@ class Youtube {
 
   static getHashTagListFromHtml(html: string) {
     const searchString =
-      /\{\"text\":\"(#[^\"]+)\",\"navigationEndpoint\":\{\"clickTrackingParams\":\"[^"]+\",\"commandMetadata\":\{\"webCommandMetadata\":\{\"url\":\"\/hashtag\//g;
+      /\{"text":"(#[^"]+)","navigationEndpoint":\{"clickTrackingParams":"[^"]+","commandMetadata":\{"webCommandMetadata":\{"url":"\/hashtag\//g;
     const hashTags = [...html.matchAll(searchString)].map((elem) =>
-      elem[1].replace(/[\u200B\u200C\u200D\uFEFF]/g, "")
+      elem[1].replace(/[\u200B-\u200D\uFEFF]/g, "")
     );
     return removeDuplicatesFromArray(hashTags);
   }
 
   static getGameTitleFromHtml(text: string) {
     const searchString =
-      /\{\"richMetadataRenderer\":\{\"style\":\"RICH_METADATA_RENDERER_STYLE_BOX_ART\",\"thumbnail\":\{\"thumbnails\":\[\{\"url\":\"[^\"]+\",\"width\":[0-9]+,\"height\":[0-9]+\},\{\"url\":\"[^\"]+\",\"width\":[0-9]+,\"height\":[0-9]+\}\]\},\"title\":\{\"simpleText\":\"([^\"]+)\"\},/g;
+      /\{"richMetadataRenderer":\{"style":"RICH_METADATA_RENDERER_STYLE_BOX_ART","thumbnail":\{"thumbnails":\[\{"url":"[^"]+","width":[0-9]+,"height":[0-9]+\},\{"url":"[^"]+","width":[0-9]+,"height":[0-9]+\}\]\},"title":\{"simpleText":"([^"]+)"\},/g;
     const result = removeDuplicatesFromArray(
       [...text.matchAll(searchString)].map((elem) => elem[1])
     );
@@ -396,7 +398,7 @@ class Youtube {
   }
 
   async #getApiData(params: any, apiCallback: any) {
-    let dataList: any[] = [];
+    const dataList: any[] = [];
     params.pageToken = undefined;
     do {
       const res = await apiCallback(params);
@@ -419,8 +421,11 @@ class Youtube {
     return youtubeApiData.flat();
   }
 
-  async getCommentThreads(videoId: string, part = ["id", "snippet", "replies"]) {
-    let params = {
+  async getCommentThreads(
+    videoId: string,
+    part = ["id", "snippet", "replies"]
+  ) {
+    const params = {
       auth: this.#YOUTUBE_API_KEY,
       part: part.join(","),
       videoId: videoId,
@@ -443,7 +448,7 @@ class Youtube {
       "topicDetails",
     ]
   ) {
-    let params = {
+    const params = {
       auth: this.#YOUTUBE_API_KEY,
       part: part.join(","),
       maxResults: 50,
@@ -467,7 +472,7 @@ class Youtube {
       "topicDetails",
     ]
   ) {
-    let params = {
+    const params = {
       auth: this.#YOUTUBE_API_KEY,
       part: part.join(","),
       maxResults: 50,
@@ -481,7 +486,7 @@ class Youtube {
     playlistId: string[],
     part = ["snippet", "contentDetails", "id", "status"]
   ) {
-    let params = {
+    const params = {
       auth: this.#YOUTUBE_API_KEY,
       part: part.join(","),
       playlistId: playlistId,
@@ -501,13 +506,15 @@ class Youtube {
       "localizations",
     ]
   ) {
-    let params = {
+    const params = {
       auth: this.#YOUTUBE_API_KEY,
       part: part.join(","),
       channelId: channelId,
       maxResults: 50,
     };
-    return this.#getApiData(params, (params: any) => youtube.playlists.list(params));
+    return this.#getApiData(params, (params: any) =>
+      youtube.playlists.list(params)
+    );
   }
 }
 
