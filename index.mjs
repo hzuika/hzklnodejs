@@ -188,30 +188,36 @@ class Youtube {
     return apiData.snippet.title;
   }
 
-  static getVideoIdFromPlaylistItemsApiData(apiData) {
-    return apiData.snippet.resourceId.videoId;
+  static getPublishedAtFromApiData(apiData) {
+    return apiData.snippet.publishedAt;
   }
 
-  static getVideoUrlFromPlaylistItemsApiData(apiData) {
-    return Youtube.getUrlFromVideoId(
-      Youtube.getVideoIdFromPlaylistItemsApiData(apiData)
-    );
+  static getThumbnailFromApiData(apiData) {
+    return apiData.snippet.thumbnails.high.url;
   }
 
-  static searchChannelIdFromText(text) {
-    const searchString = /https:\/\/www.youtube.com\/channel\/(.{24})/g;
-    return removeDuplicatesFromArray(
-      [...text.matchAll(searchString)].map((elem) => elem[1])
-    );
+  static getThumbnailFromChannelApiData(channelApiData) {
+    return Youtube.getThumbnailFromApiData(channelApiData);
   }
 
-  static searchCustomUrlFromText(text) {
-    const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n 　]+/g;
-    const data = text.match(customUrl);
-    if (data == null) {
-      return [];
-    }
-    return data;
+  static getThumbnailFromVideoApiData(videoApiData) {
+    return Youtube.getThumbnailFromApiData(videoApiData);
+  }
+
+  static getThumbnailFromVideoId(videoId) {
+    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  }
+
+  static #getIdFromApiData(apiData) {
+    return apiData.id;
+  }
+
+  static getChannelIdFromChannelApiData(channelApiData) {
+    return Youtube.#getIdFromApiData(channelApiData);
+  }
+
+  static getChannelIdFromVideoApiData(videoApiData) {
+    return videoApiData.snippet.channelId;
   }
 
   static async getChannelIdFromCustomUrl(url) {
@@ -235,23 +241,118 @@ class Youtube {
     return url.split(prefix)[1];
   }
 
-  static getUploadPlaylistIdFromChannelId = (channelId) => {
-    return replaceString(channelId, 1, "U");
-  };
   static getChannelIdFromUploadPlaylistId = (uploadPlaylistId) => {
     return replaceString(uploadPlaylistId, 1, "C");
   };
 
-  static getUrlFromChannelId(channelId) {
+  static getVideoIdFromVideoApiData(videoApiData) {
+    return Youtube.#getIdFromApiData(videoApiData);
+  }
+
+  static getVideoIdFromPlaylistItemsApiData(apiData) {
+    return apiData.snippet.resourceId.videoId;
+  }
+
+  static getVideoIdFromVideoUrl(url) {
+    return url.slice(-11);
+  }
+
+  static getTitleFromVideoApiData(videoApiData) {
+    return Youtube.getTitleFromApiData(videoApiData);
+  }
+
+  static getPublishedAtFromVideoApiData(videoApiData) {
+    return Youtube.getPublishedAtFromApiData(videoApiData);
+  }
+
+  static getStartTimeFromVideoApiData(videoApiData) {
+    return videoApiData.liveStreamingDetails
+      ? videoApiData.liveStreamingDetails.actualStartTime
+      : null;
+  }
+
+  static getEndTimeFromVideoApiData(videoApiData) {
+    return videoApiData.liveStreamingDetails
+      ? videoApiData.liveStreamingDetails.actualEndTime
+      : null;
+  }
+
+  static #getViewCountFromApiData(apiData) {
+    return apiData.statistics.viewCount;
+  }
+
+  static getViewCountFromVideoApiData(videoApiData) {
+    return Youtube.#getViewCountFromApiData(videoApiData);
+  }
+
+  static getViewCountFromChannelApiData(channelApiData) {
+    return Youtube.#getViewCountFromApiData(channelApiData);
+  }
+
+  static #getLikeCountFromApiData(ApiData) {
+    return ApiData.statistics.likeCount;
+  }
+
+  static getLikeCountFromVideoApiData(videoApiData) {
+    return Youtube.#getLikeCountFromApiData(videoApiData);
+  }
+
+  static #getVideoCountFromApiData(apiData) {
+    return apiData.statistics.videoCount;
+  }
+
+  static getVideoCountFromChannelApiData(channelApiData) {
+    return Youtube.#getVideoCountFromApiData(channelApiData);
+  }
+
+  static #getSubscriberCountFromApiData(apiData) {
+    return apiData.statistics.subscriberCount;
+  }
+
+  static getSubscriberCountFromChannelApiData(channelApiData) {
+    return Youtube.#getSubscriberCountFromApiData(channelApiData);
+  }
+
+  static #getBannerFromApiData(apiData) {
+    return apiData.brandingSettings.image.bannerExternalUrl;
+  }
+
+  static getBannerFromChannelApiData(channelApiData) {
+    return Youtube.#getBannerFromApiData(channelApiData);
+  }
+
+  static getVideoUrlFromPlaylistItemsApiData(apiData) {
+    return Youtube.getVideoUrlFromVideoId(
+      Youtube.getVideoIdFromPlaylistItemsApiData(apiData)
+    );
+  }
+
+  static searchChannelIdFromText(text) {
+    const searchString = /https:\/\/www.youtube.com\/channel\/(.{24})/g;
+    return removeDuplicatesFromArray(
+      [...text.matchAll(searchString)].map((elem) => elem[1])
+    );
+  }
+
+  static searchCustomUrlFromText(text) {
+    const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n 　]+/g;
+    const data = text.match(customUrl);
+    if (data == null) {
+      return [];
+    }
+    return data;
+  }
+
+  static getUploadPlaylistIdFromChannelId = (channelId) => {
+    return replaceString(channelId, 1, "U");
+  };
+
+  static getChannelUrlFromChannelId(channelId) {
     assert.strictEqual(channelId.length, 24);
     return `https://www.youtube.com/channel/${channelId}`;
   }
 
-  static getVideoIdFromUrl(url) {
-    return url.slice(-11);
-  }
-
-  static getUrlFromVideoId(videoId) {
+  static getVideoUrlFromVideoId(videoId) {
     assert.strictEqual(videoId.length, 11);
     return `https://www.youtube.com/watch?v=${videoId}`;
   }
