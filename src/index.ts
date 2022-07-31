@@ -248,18 +248,6 @@ class YoutubeChannelId {
     return new YoutubeChannelId(url.split(prefix)[1]).getId();
   }
 
-  static getIdFromHtml(html: string) {
-    const searchString =
-      /<meta property="og:url" content="https:\/\/www.youtube.com\/channel\/(.{24})">/g;
-    const res = [...html.matchAll(searchString)];
-    if (res.length > 0) {
-      return new YoutubeChannelId(
-        [...html.matchAll(searchString)][0][1]
-      ).getId();
-    }
-    return "";
-  }
-
   static isValid(id: string) {
     return (
       id.substring(0, 2) === YoutubeChannelId.#prefix &&
@@ -692,20 +680,6 @@ class Youtube {
     return new YoutubeVideoId(videoId).toUrl();
   }
 
-  static async getGameTitleFromVideoId(videoId: string) {
-    return Youtube.getGameTitleFromUrl(Youtube.getVideoUrlFromVideoId(videoId));
-  }
-
-  // Channel ID
-  static async getChannelIdFromCustomUrl(url: string) {
-    const html = await getHtmlFromUrl(url);
-    return Youtube.getChannelIdFromHtml(html);
-  }
-
-  static getChannelIdFromHtml(html: string) {
-    return YoutubeChannelId.getIdFromHtml(html);
-  }
-
   static getChannelIdFromUrl(url: string) {
     return YoutubeChannelId.getIdFromUrl(url);
   }
@@ -746,40 +720,6 @@ class Youtube {
   static removeEtagFromApiData(apiData: YoutubeApiData) {
     delete apiData.etag;
     return apiData;
-  }
-
-  static getAtChannelIdListFromHtml(html: string) {
-    const searchString =
-      /\{"text":"@[^"]+","navigationEndpoint":\{"clickTrackingParams":"[^"]+","commandMetadata":\{"webCommandMetadata":\{"url":"\/channel\/(.{24})"/g;
-    return removeDuplicatesFromArray(
-      [...html.matchAll(searchString)].map((elem) => elem[1])
-    );
-  }
-
-  static getHashTagListFromHtml(html: string) {
-    const searchString =
-      /\{"text":"(#[^"]+)","navigationEndpoint":\{"clickTrackingParams":"[^"]+","commandMetadata":\{"webCommandMetadata":\{"url":"\/hashtag\//g;
-    const hashTags = [...html.matchAll(searchString)].map((elem) =>
-      elem[1].replace(/[\u200B-\u200D\uFEFF]/g, "")
-    );
-    return removeDuplicatesFromArray(hashTags);
-  }
-
-  static getGameTitleFromHtml(text: string) {
-    const searchString =
-      /\{"richMetadataRenderer":\{"style":"RICH_METADATA_RENDERER_STYLE_BOX_ART","thumbnail":\{"thumbnails":\[\{"url":"[^"]+","width":[0-9]+,"height":[0-9]+\},\{"url":"[^"]+","width":[0-9]+,"height":[0-9]+\}\]\},"title":\{"simpleText":"([^"]+)"\},/g;
-    const result = removeDuplicatesFromArray(
-      [...text.matchAll(searchString)].map((elem) => elem[1])
-    );
-    if (result.length > 0) {
-      return result[0];
-    } else {
-      return "";
-    }
-  }
-
-  static async getGameTitleFromUrl(url: string) {
-    return Youtube.getGameTitleFromHtml(await getHtmlFromUrl(url));
   }
 }
 

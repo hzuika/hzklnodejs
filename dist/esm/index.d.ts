@@ -64,9 +64,6 @@ declare class Youtube {
     static getThumbnailFromVideoId(videoId: string): string;
     static getVideoIdFromVideoUrl(url: string): string;
     static getVideoUrlFromVideoId(videoId: string): string;
-    static getGameTitleFromVideoId(videoId: string): Promise<string>;
-    static getChannelIdFromCustomUrl(url: string): Promise<string>;
-    static getChannelIdFromHtml(html: string): string;
     static getChannelIdFromUrl(url: string): string;
     static getChannelIdFromUploadPlaylistId: (uploadPlaylistId: string) => string;
     static getChannelUrlFromChannelId(channelId: string): string;
@@ -75,10 +72,6 @@ declare class Youtube {
     static getUploadPlaylistIdFromChannelId(channelId: string): string;
     static getPlaylistUrlFromPlaylistId(playlistId: string): string;
     static removeEtagFromApiData(apiData: YoutubeApiData): YoutubeApiData;
-    static getAtChannelIdListFromHtml(html: string): string[];
-    static getHashTagListFromHtml(html: string): string[];
-    static getGameTitleFromHtml(text: string): string;
-    static getGameTitleFromUrl(url: string): Promise<string>;
 }
 declare class Notion {
     #private;
