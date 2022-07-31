@@ -1,10 +1,23 @@
 import { promises as fs } from "fs";
 import Path from "path";
-import { google } from "googleapis";
+import { google, youtube_v3 } from "googleapis";
 const youtube = google.youtube("v3");
 import axios from "axios";
-import assert from "node:assert/strict";
 import { Client } from "@notionhq/client";
+import { GaxiosPromise } from "googleapis/build/src/apis/abusiveexperiencereport";
+import {
+  CreateDatabaseParameters,
+  CreateDatabaseResponse,
+  CreatePageParameters,
+  CreatePageResponse,
+  GetDatabaseParameters,
+  GetDatabaseResponse,
+  GetPageParameters,
+  GetPageResponse,
+  UpdateDatabaseResponse,
+  UpdatePageParameters,
+  UpdatePageResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 
 const existPath = async (filepath: string) => {
   try {
@@ -32,17 +45,17 @@ const readFileJson = async (filepath: string) => {
   return getJsonFromString(await readFileText(filepath));
 };
 
-const writeFileText = async (filepath: string, data: any) => {
+const writeFileText = async (filepath: string, data: string) => {
   await makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, data, "utf8");
 };
 
-const writeFileBinary = async (filepath: string, data: any) => {
+const writeFileBinary = async (filepath: string, data: Buffer) => {
   await makeDirectory(getDirectoryName(filepath));
   fs.writeFile(filepath, data, "binary");
 };
 
-const getStringFromJson = (json: string) => {
+const getStringFromJson = (json: object) => {
   return JSON.stringify(json, null, 2);
 };
 
@@ -50,9 +63,9 @@ const getJsonFromString = (string: string) => {
   return JSON.parse(string);
 };
 
-const writeFileJson = async (filepath: string, json: any) => {
+const writeFileJson = async (filepath: string, json: object) => {
   await makeDirectory(getDirectoryName(filepath));
-  fs.writeFile(filepath, getStringFromJson(json), "utf8");
+  writeFileText(filepath, getStringFromJson(json));
 };
 
 const getDirectoryName = (filepath: string) => {
@@ -72,9 +85,9 @@ const getFileNameWithoutExtension = (filepath: string) => {
 };
 
 // [1, 2, 3, 4, 5, 6, 7, 8, 9, 0], 3 => [[1,2,3],[4,5,6],[7,8,9],[0]]
-const getChunkFromArray = (array: any[], size: number) => {
+const getChunkFromArray = <T>(array: T[], size: number): T[][] => {
   return array.reduce(
-    (acc, _, index) =>
+    (acc: T[][], _, index) =>
       index % size ? acc : [...acc, array.slice(index, index + size)],
     []
   );
@@ -93,22 +106,22 @@ const replaceString = (inStr: string, n: number, newStr: string) => {
 // a,b
 // 1,2
 // 3,4
-const getTableFromJson = (json: any, delimiter: string) => {
+const getTableFromJson = (json: object[], delimiter: string) => {
   const header = Object.keys(json[0]).join(delimiter) + "\n";
   const body = json
-    .map((d: any) => Object.values(d).join(delimiter))
+    .map((d: object) => Object.values(d).join(delimiter))
     .join("\n");
   return header + body;
 };
 
-const getCsvFromJson = (json: any) => {
+const getCsvFromJson = (json: object[]) => {
   return getTableFromJson(json, ",");
 };
-const getTsvFromJson = (json: any) => {
+const getTsvFromJson = (json: object[]) => {
   return getTableFromJson(json, "\t");
 };
 
-const removeDuplicatesFromArray = (array: any[]) => {
+const removeDuplicatesFromArray = <T>(array: T[]) => {
   return [...new Set(array)];
 };
 
@@ -152,181 +165,543 @@ const getJapaneseIsoStringFromUtcIsoString = (utc: string) => {
   return dt_offset.toISOString().replace("Z", offsetString);
 };
 
-const equalArray = (array1: any[], array2: any[]) => {
+const equalArray = <T>(array1: T[], array2: T[]) => {
   return JSON.stringify(array1) === JSON.stringify(array2);
 };
 
 const sleep = (ms: number) => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 };
 
-const sortJson = (json: any) => {
+const sortJson = (json: object) => {
   return Object.fromEntries(
     Object.entries(json).sort((a, b) => (a[0] < b[0] ? -1 : 1))
   );
 };
 
+class YoutubeVideoId {
+  id: string;
+  static #validLength = 11;
+  static urlPrefix = "https://www.youtube.com/watch?v=";
+  static shortUrlPrefix = "https://youtu.be/";
+
+  constructor(id: string) {
+    if (!YoutubeVideoId.isValid(id)) {
+      throw new Error(`${id} length is not ${YoutubeVideoId.#validLength}.`);
+    }
+    this.id = id;
+  }
+
+  getId() {
+    return this.id;
+  }
+
+  toUrl() {
+    return `${YoutubeVideoId.urlPrefix}${this.getId()}`;
+  }
+
+  toShortUrl() {
+    return `${YoutubeVideoId.shortUrlPrefix}${this.getId()}`;
+  }
+
+  toThumbnail() {
+    return `https://i.ytimg.com/vi/${this.getId()}/hqdefault.jpg`;
+  }
+
+  static isValid(id: string) {
+    return id.length === YoutubeVideoId.#validLength;
+  }
+}
+
+class YoutubeChannelId {
+  id: string;
+  static #validLength = 24;
+  static #prefix = "UC";
+  static urlPrefix = "https://www.youtube.com/channel/";
+
+  constructor(id: string) {
+    if (!YoutubeChannelId.isValid(id)) {
+      throw new Error(`${id} length is not ${YoutubeChannelId.#validLength}.`);
+    }
+    this.id = id;
+  }
+
+  getId() {
+    return this.id;
+  }
+
+  toPlaylistId() {
+    return replaceString(this.getId(), 1, "U");
+  }
+
+  toUrl() {
+    return `${YoutubeChannelId.urlPrefix}${this.getId()}`;
+  }
+
+  static getIdFromUrl(url: string) {
+    const prefix = YoutubeChannelId.urlPrefix;
+    if (url.indexOf(prefix) == -1) {
+      throw new Error(`${url} is not channel url.`);
+    }
+    return new YoutubeChannelId(url.split(prefix)[1]).getId();
+  }
+
+  static getIdFromHtml(html: string) {
+    const searchString =
+      /<meta property="og:url" content="https:\/\/www.youtube.com\/channel\/(.{24})">/g;
+    const res = [...html.matchAll(searchString)];
+    if (res.length > 0) {
+      return new YoutubeChannelId(
+        [...html.matchAll(searchString)][0][1]
+      ).getId();
+    }
+    return "";
+  }
+
+  static isValid(id: string) {
+    return (
+      id.substring(0, 2) === YoutubeChannelId.#prefix &&
+      id.length === YoutubeChannelId.#validLength
+    );
+  }
+}
+
+class YoutubePlaylistId {
+  id: string;
+  static #uploadValidLength = 24;
+  static #uploadPrefix = "UU";
+  static #validLength = 34;
+  static #prefix = "PL";
+  static urlPrefix = "https://www.youtube.com/playlist?list=";
+
+  constructor(id: string) {
+    if (!YoutubePlaylistId.isValid(id)) {
+      throw new Error(
+        `${id} length is not ${YoutubePlaylistId.#validLength} or ${
+          YoutubePlaylistId.#uploadValidLength
+        }, or Prefix is not ${YoutubePlaylistId.#prefix} or ${
+          YoutubePlaylistId.#uploadPrefix
+        }.`
+      );
+    }
+    this.id = id;
+  }
+
+  getId() {
+    return this.id;
+  }
+
+  toChannelId() {
+    if (YoutubePlaylistId.isUploadId(this.getId())) {
+      return replaceString(this.getId(), 1, "C");
+    } else {
+      return "";
+    }
+  }
+
+  toUrl() {
+    return `${YoutubePlaylistId.urlPrefix}${this.getId()}`;
+  }
+
+  static isUploadId(id: string) {
+    return (
+      id.substring(0, 2) === YoutubePlaylistId.#uploadPrefix &&
+      id.length === YoutubePlaylistId.#uploadValidLength
+    );
+  }
+
+  static isRegularId(id: string) {
+    return (
+      id.substring(0, 2) === YoutubePlaylistId.#prefix &&
+      id.length === YoutubePlaylistId.#validLength
+    );
+  }
+
+  static isValid(id: string) {
+    return (
+      YoutubePlaylistId.isRegularId(id) || YoutubePlaylistId.isUploadId(id)
+    );
+  }
+}
+
+type YoutubeVideoApiData = youtube_v3.Schema$Video;
+
+type YoutubeChannelApiData = youtube_v3.Schema$Channel;
+
+type YoutubePlaylistApiData = youtube_v3.Schema$Playlist;
+
+type YoutubePlaylistItemApiData = youtube_v3.Schema$PlaylistItem;
+
+type YoutubeApiData =
+  | YoutubeVideoApiData
+  | YoutubeChannelApiData
+  | YoutubePlaylistApiData
+  | YoutubePlaylistItemApiData;
+
+type YoutubeVideoApiParameter = youtube_v3.Params$Resource$Videos$List;
+type YoutubeChannelApiParameter = youtube_v3.Params$Resource$Channels$List;
+type YoutubePlaylistApiParameter = youtube_v3.Params$Resource$Playlists$List;
+type YoutubePlaylistItemApiParameter =
+  youtube_v3.Params$Resource$Playlistitems$List;
+type YoutubeCommentThreadApiParameter =
+  youtube_v3.Params$Resource$Commentthreads$List;
+
+type YoutubeApiParametar =
+  | YoutubeVideoApiParameter
+  | YoutubeChannelApiParameter
+  | YoutubePlaylistApiParameter
+  | YoutubePlaylistItemApiParameter
+  | YoutubeCommentThreadApiParameter;
+
+type YoutubeVideoApiResponse = youtube_v3.Schema$VideoListResponse;
+type YoutubeChannelApiResponse = youtube_v3.Schema$ChannelListResponse;
+type YoutubePlaylistApiResponse = youtube_v3.Schema$PlaylistListResponse;
+type YoutubePlaylistItemApiResponse =
+  youtube_v3.Schema$PlaylistItemListResponse;
+type YoutubeCommentThreadApiResponse =
+  youtube_v3.Schema$CommentThreadListResponse;
+
+type YoutubeApiResponse =
+  | YoutubeVideoApiResponse
+  | YoutubeChannelApiResponse
+  | YoutubePlaylistApiResponse
+  | YoutubePlaylistItemApiResponse
+  | YoutubeCommentThreadApiResponse;
+
+class YoutubeApiDataUtil {
+  static getDescription(apiData: YoutubeVideoApiData | YoutubeChannelApiData) {
+    return apiData.snippet?.description;
+  }
+
+  static getTitle(
+    apiData:
+      | YoutubeVideoApiData
+      | YoutubeChannelApiData
+      | YoutubePlaylistApiData
+  ) {
+    return apiData.snippet?.title;
+  }
+
+  static getPublishedAt(apiData: YoutubeVideoApiData | YoutubeChannelApiData) {
+    return apiData.snippet?.publishedAt;
+  }
+
+  static getThumbnail(apiData: YoutubeVideoApiData | YoutubeChannelApiData) {
+    return apiData.snippet?.thumbnails?.high?.url;
+  }
+
+  static getId(apiData: YoutubeApiData) {
+    return apiData.id;
+  }
+
+  static getChannelId(apiData: YoutubeVideoApiData) {
+    return apiData.snippet?.channelId;
+  }
+
+  static getStartTime(apiData: YoutubeVideoApiData) {
+    return apiData.liveStreamingDetails?.actualStartTime;
+  }
+
+  static getEndTime(apiData: YoutubeVideoApiData) {
+    return apiData.liveStreamingDetails?.actualEndTime;
+  }
+
+  static getViewCount(apiData: YoutubeVideoApiData | YoutubeChannelApiData) {
+    return apiData.statistics?.viewCount;
+  }
+
+  static getLikeCount(apiData: YoutubeVideoApiData) {
+    return apiData.statistics?.likeCount;
+  }
+
+  static getVideoId(apiData: YoutubePlaylistItemApiData) {
+    return apiData.contentDetails?.videoId;
+  }
+
+  static getVideoCount(apiData: YoutubeChannelApiData) {
+    return apiData.statistics?.videoCount;
+  }
+
+  static getSubscriberCount(apiData: YoutubeChannelApiData) {
+    return apiData.statistics?.subscriberCount;
+  }
+
+  static getBanner(apiData: YoutubeChannelApiData) {
+    return apiData.brandingSettings?.image?.bannerExternalUrl;
+  }
+}
+
 class Youtube {
   #YOUTUBE_API_KEY;
-  #channel_id_length = 24;
-  #video_id_length = 11;
 
   constructor(apiKey: string) {
     this.#YOUTUBE_API_KEY = apiKey;
   }
 
-  static removeEtagFromApiData(apiData: any) {
-    const { etag, ...rest } = apiData;
-    return rest;
+  async #getApiData(
+    params: YoutubeApiParametar,
+    apiCallback: (p: YoutubeApiParametar) => GaxiosPromise<YoutubeApiResponse>
+  ) {
+    const dataList: YoutubeApiData[] = [];
+    params.pageToken = undefined;
+    do {
+      const res = await apiCallback(params);
+      Array.prototype.push.apply(
+        dataList,
+        res.data.items ? res.data.items : []
+      );
+      params.pageToken = res.data.nextPageToken
+        ? res.data.nextPageToken
+        : undefined;
+    } while (params.pageToken);
+    return dataList;
   }
 
-  static getDescriptionFromApiData(apiData: any) {
-    return apiData.snippet.description;
+  async #getApiDataFromIdList(
+    idList: string[],
+    params: YoutubeApiParametar,
+    apiCallback: (p: YoutubeApiParametar) => GaxiosPromise<YoutubeApiResponse>
+  ) {
+    const youtubeApiData = await Promise.all(
+      getChunkFromArray(idList, 50).map((idList50) => {
+        params.id = idList50;
+        return this.#getApiData(params, apiCallback);
+      })
+    );
+    return youtubeApiData.flat();
   }
 
-  static getTitleFromApiData(apiData: any) {
-    return apiData.snippet.title;
+  async getCommentThreads(
+    videoId: string,
+    part = ["id", "snippet", "replies"]
+  ) {
+    const params: YoutubeCommentThreadApiParameter = {
+      auth: this.#YOUTUBE_API_KEY,
+      part: part,
+      videoId: videoId,
+      maxResults: 100,
+    };
+    return this.#getApiData(params, (p: YoutubeCommentThreadApiParameter) =>
+      youtube.commentThreads.list(p)
+    );
   }
 
-  static getPublishedAtFromApiData(apiData: any) {
-    return apiData.snippet.publishedAt;
+  async getVideos(
+    videoIdList: string[],
+    part = [
+      "id",
+      "liveStreamingDetails",
+      "localizations",
+      "player",
+      "recordingDetails",
+      "snippet",
+      "statistics",
+      "status",
+      "topicDetails",
+    ]
+  ) {
+    const params = {
+      auth: this.#YOUTUBE_API_KEY,
+      part: part,
+      maxResults: 50,
+    };
+    return this.#getApiDataFromIdList(
+      videoIdList,
+      params,
+      (p: YoutubeVideoApiParameter) => youtube.videos.list(p)
+    );
   }
 
-  static getThumbnailFromApiData(apiData: any) {
-    return apiData.snippet.thumbnails.high.url;
+  async getChannels(
+    channelIdList: string[],
+    part = [
+      "brandingSettings",
+      "contentDetails",
+      "contentOwnerDetails",
+      "id",
+      "localizations",
+      "snippet",
+      "statistics",
+      "status",
+      "topicDetails",
+    ]
+  ) {
+    const params: YoutubeChannelApiParameter = {
+      auth: this.#YOUTUBE_API_KEY,
+      part: part,
+      maxResults: 50,
+    };
+    return this.#getApiDataFromIdList(
+      channelIdList,
+      params,
+      (p: YoutubeChannelApiParameter) => youtube.channels.list(p)
+    );
   }
 
-  static getThumbnailFromChannelApiData(channelApiData: any) {
-    return Youtube.getThumbnailFromApiData(channelApiData);
+  async getPlaylistItems(
+    playlistId: string,
+    part = ["snippet", "contentDetails", "id", "status"]
+  ) {
+    const params: YoutubePlaylistItemApiParameter = {
+      auth: this.#YOUTUBE_API_KEY,
+      part: part,
+      playlistId: playlistId,
+      maxResults: 50,
+    };
+    return this.#getApiData(params, (p: YoutubePlaylistItemApiParameter) =>
+      youtube.playlistItems.list(p)
+    );
   }
 
-  static getThumbnailFromVideoApiData(videoApiData: any) {
-    return Youtube.getThumbnailFromApiData(videoApiData);
+  async getPlaylists(
+    channelId: string,
+    part = [
+      "snippet",
+      "contentDetails",
+      "id",
+      "status",
+      "player",
+      "localizations",
+    ]
+  ) {
+    const params: YoutubePlaylistApiParameter = {
+      auth: this.#YOUTUBE_API_KEY,
+      part: part,
+      channelId: channelId,
+      maxResults: 50,
+    };
+    return this.#getApiData(params, (params: YoutubePlaylistApiParameter) =>
+      youtube.playlists.list(params)
+    );
   }
 
-  static getThumbnailFromVideoId(videoId: string) {
-    return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  // Video API Data
+  static getChannelIdFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getChannelId(videoApiData);
   }
 
-  static #getIdFromApiData(apiData: any) {
-    return apiData.id;
+  static getVideoIdFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getId(videoApiData);
   }
 
-  static getChannelIdFromChannelApiData(channelApiData: any) {
-    return Youtube.#getIdFromApiData(channelApiData);
+  static getTitleFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getTitle(videoApiData);
   }
 
-  static getChannelIdFromVideoApiData(videoApiData: any) {
-    return videoApiData.snippet.channelId;
+  static getDescriptioFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getDescription(videoApiData);
   }
 
-  static async getChannelIdFromCustomUrl(url: any) {
-    const html = await getHtmlFromUrl(url);
-    return Youtube.getChannelIdFromHtml(html);
+  static getPublishedAtFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getPublishedAt(videoApiData);
   }
 
-  static getChannelIdFromHtml(html: string) {
-    const searchString =
-      /<meta property="og:url" content="https:\/\/www.youtube.com\/channel\/(.{24})">/g;
-    const res = [...html.matchAll(searchString)];
-    if (res.length > 0) {
-      return [...html.matchAll(searchString)][0][1];
+  static getStartTimeFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getStartTime(videoApiData);
+  }
+
+  static getEndTimeFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getEndTime(videoApiData);
+  }
+
+  static getViewCountFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getViewCount(videoApiData);
+  }
+
+  static getLikeCountFromVideoApiData(videoApiData: YoutubeVideoApiData) {
+    return YoutubeApiDataUtil.getLikeCount(videoApiData);
+  }
+
+  // Channel API Data
+  static getChannelIdFromChannelApiData(channelApiData: YoutubeChannelApiData) {
+    return YoutubeApiDataUtil.getId(channelApiData);
+  }
+
+  static getViewCountFromChannelApiData(channelApiData: YoutubeChannelApiData) {
+    return YoutubeApiDataUtil.getViewCount(channelApiData);
+  }
+
+  static getVideoCountFromChannelApiData(
+    channelApiData: YoutubeChannelApiData
+  ) {
+    return YoutubeApiDataUtil.getVideoCount(channelApiData);
+  }
+
+  static getSubscriberCountFromChannelApiData(
+    channelApiData: YoutubeChannelApiData
+  ) {
+    return YoutubeApiDataUtil.getSubscriberCount(channelApiData);
+  }
+
+  static getBannerFromChannelApiData(channelApiData: YoutubeChannelApiData) {
+    return YoutubeApiDataUtil.getBanner(channelApiData);
+  }
+
+  // Playlist API Data
+  static getTitleFromPlaylistApiData(apiData: YoutubePlaylistApiData) {
+    return YoutubeApiDataUtil.getTitle(apiData);
+  }
+
+  static getPlaylistIdFromPlaylistApiData(apiData: YoutubePlaylistApiData) {
+    return YoutubeApiDataUtil.getId(apiData);
+  }
+
+  // PlaylistItem API Data
+  static getVideoIdFromPlaylistItemApiData(
+    apiData: YoutubePlaylistItemApiData
+  ) {
+    return YoutubeApiDataUtil.getVideoId(apiData);
+  }
+
+  static getVideoUrlFromPlaylistItemsApiData(
+    apiData: YoutubePlaylistItemApiData
+  ) {
+    const videoId = Youtube.getVideoIdFromPlaylistItemApiData(apiData);
+    if (videoId == undefined) {
+      return "";
     }
-    return "";
+    return Youtube.getVideoUrlFromVideoId(videoId);
   }
 
-  static getChannelIdFromUrl(url: string) {
-    const prefix = "https://www.youtube.com/channel/";
-    assert.notStrictEqual(url.indexOf(prefix), -1);
-    return url.split(prefix)[1];
-  }
-
-  static getChannelIdFromUploadPlaylistId = (uploadPlaylistId: string) => {
-    return replaceString(uploadPlaylistId, 1, "C");
-  };
-
-  static getVideoIdFromVideoApiData(videoApiData: any) {
-    return Youtube.#getIdFromApiData(videoApiData);
-  }
-
-  static getVideoIdFromPlaylistItemsApiData(apiData: any) {
-    return apiData.snippet.resourceId.videoId;
+  // Video ID
+  static getThumbnailFromVideoId(videoId: string) {
+    return new YoutubeVideoId(videoId).toThumbnail();
   }
 
   static getVideoIdFromVideoUrl(url: string) {
     return url.slice(-11);
   }
 
-  static getTitleFromVideoApiData(videoApiData: any) {
-    return Youtube.getTitleFromApiData(videoApiData);
+  static getVideoUrlFromVideoId(videoId: string) {
+    return new YoutubeVideoId(videoId).toUrl();
   }
 
-  static getPublishedAtFromVideoApiData(videoApiData: any) {
-    return Youtube.getPublishedAtFromApiData(videoApiData);
+  static async getGameTitleFromVideoId(videoId: string) {
+    return Youtube.getGameTitleFromUrl(Youtube.getVideoUrlFromVideoId(videoId));
   }
 
-  static getStartTimeFromVideoApiData(videoApiData: any) {
-    return videoApiData.liveStreamingDetails
-      ? videoApiData.liveStreamingDetails.actualStartTime
-      : null;
+  // Channel ID
+  static async getChannelIdFromCustomUrl(url: string) {
+    const html = await getHtmlFromUrl(url);
+    return Youtube.getChannelIdFromHtml(html);
   }
 
-  static getEndTimeFromVideoApiData(videoApiData: any) {
-    return videoApiData.liveStreamingDetails
-      ? videoApiData.liveStreamingDetails.actualEndTime
-      : null;
+  static getChannelIdFromHtml(html: string) {
+    return YoutubeChannelId.getIdFromHtml(html);
   }
 
-  static #getViewCountFromApiData(apiData: any) {
-    return apiData.statistics.viewCount;
+  static getChannelIdFromUrl(url: string) {
+    return YoutubeChannelId.getIdFromUrl(url);
   }
 
-  static getViewCountFromVideoApiData(videoApiData: any) {
-    return Youtube.#getViewCountFromApiData(videoApiData);
-  }
+  static getChannelIdFromUploadPlaylistId = (uploadPlaylistId: string) => {
+    return new YoutubePlaylistId(uploadPlaylistId).toChannelId();
+  };
 
-  static getViewCountFromChannelApiData(channelApiData: any) {
-    return Youtube.#getViewCountFromApiData(channelApiData);
-  }
-
-  static #getLikeCountFromApiData(ApiData: any) {
-    return ApiData.statistics.likeCount;
-  }
-
-  static getLikeCountFromVideoApiData(videoApiData: any) {
-    return Youtube.#getLikeCountFromApiData(videoApiData);
-  }
-
-  static #getVideoCountFromApiData(apiData: any) {
-    return apiData.statistics.videoCount;
-  }
-
-  static getVideoCountFromChannelApiData(channelApiData: any) {
-    return Youtube.#getVideoCountFromApiData(channelApiData);
-  }
-
-  static #getSubscriberCountFromApiData(apiData: any) {
-    return apiData.statistics.subscriberCount;
-  }
-
-  static getSubscriberCountFromChannelApiData(channelApiData: any) {
-    return Youtube.#getSubscriberCountFromApiData(channelApiData);
-  }
-
-  static #getBannerFromApiData(apiData: any) {
-    return apiData.brandingSettings.image.bannerExternalUrl;
-  }
-
-  static getBannerFromChannelApiData(channelApiData: any) {
-    return Youtube.#getBannerFromApiData(channelApiData);
-  }
-
-  static getVideoUrlFromPlaylistItemsApiData(apiData: any) {
-    return Youtube.getVideoUrlFromVideoId(
-      Youtube.getVideoIdFromPlaylistItemsApiData(apiData)
-    );
+  static getChannelUrlFromChannelId(channelId: string) {
+    return new YoutubeChannelId(channelId).toUrl();
   }
 
   static searchChannelIdFromText(text: string) {
@@ -345,18 +720,18 @@ class Youtube {
     return data;
   }
 
-  static getUploadPlaylistIdFromChannelId = (channelId: string) => {
-    return replaceString(channelId, 1, "U");
-  };
-
-  static getChannelUrlFromChannelId(channelId: string) {
-    assert.strictEqual(channelId.length, 24);
-    return `https://www.youtube.com/channel/${channelId}`;
+  static getUploadPlaylistIdFromChannelId(channelId: string) {
+    return new YoutubeChannelId(channelId).toPlaylistId();
   }
 
-  static getVideoUrlFromVideoId(videoId: string) {
-    assert.strictEqual(videoId.length, 11);
-    return `https://www.youtube.com/watch?v=${videoId}`;
+  // Playlist ID
+  static getPlaylistUrlFromPlaylistId(playlistId: string) {
+    return new YoutubePlaylistId(playlistId).toUrl();
+  }
+
+  static removeEtagFromApiData(apiData: YoutubeApiData) {
+    delete apiData.etag;
+    return apiData;
   }
 
   static getAtChannelIdListFromHtml(html: string) {
@@ -392,130 +767,6 @@ class Youtube {
   static async getGameTitleFromUrl(url: string) {
     return Youtube.getGameTitleFromHtml(await getHtmlFromUrl(url));
   }
-
-  static async getGameTitleFromVideoId(videoId: string) {
-    return Youtube.getGameTitleFromUrl(Youtube.getVideoUrlFromVideoId(videoId));
-  }
-
-  async #getApiData(params: any, apiCallback: any) {
-    const dataList: any[] = [];
-    params.pageToken = undefined;
-    do {
-      const res = await apiCallback(params);
-      Array.prototype.push.apply(dataList, res.data.items);
-      params.pageToken = res.data.nextPageToken;
-    } while (params.pageToken);
-    return dataList;
-  }
-
-  async #getApiDataFromIdList(idList: string[], params: any, apiCallback: any) {
-    // [1].flat() == [1]
-    // [[1,2]].flat() == [1,2]
-    idList = [idList].flat();
-    const youtubeApiData = await Promise.all(
-      getChunkFromArray(idList, 50).map((idList50: any[]) => {
-        params.id = idList50.join(",");
-        return this.#getApiData(params, apiCallback);
-      })
-    );
-    return youtubeApiData.flat();
-  }
-
-  async getCommentThreads(
-    videoId: string,
-    part = ["id", "snippet", "replies"]
-  ) {
-    const params = {
-      auth: this.#YOUTUBE_API_KEY,
-      part: part.join(","),
-      videoId: videoId,
-      maxResults: 100,
-    };
-    return this.#getApiData(params, (p: any) => youtube.commentThreads.list(p));
-  }
-
-  async getVideos(
-    videoIdList: string[],
-    part = [
-      "id",
-      "liveStreamingDetails",
-      "localizations",
-      "player",
-      "recordingDetails",
-      "snippet",
-      "statistics",
-      "status",
-      "topicDetails",
-    ]
-  ) {
-    const params = {
-      auth: this.#YOUTUBE_API_KEY,
-      part: part.join(","),
-      maxResults: 50,
-    };
-    return this.#getApiDataFromIdList(videoIdList, params, (p: any) =>
-      youtube.videos.list(p)
-    );
-  }
-
-  async getChannels(
-    channelIdList: string[],
-    part = [
-      "brandingSettings",
-      "contentDetails",
-      "contentOwnerDetails",
-      "id",
-      "localizations",
-      "snippet",
-      "statistics",
-      "status",
-      "topicDetails",
-    ]
-  ) {
-    const params = {
-      auth: this.#YOUTUBE_API_KEY,
-      part: part.join(","),
-      maxResults: 50,
-    };
-    return this.#getApiDataFromIdList(channelIdList, params, (p: any) =>
-      youtube.channels.list(p)
-    );
-  }
-
-  async getPlaylistItems(
-    playlistId: string[],
-    part = ["snippet", "contentDetails", "id", "status"]
-  ) {
-    const params = {
-      auth: this.#YOUTUBE_API_KEY,
-      part: part.join(","),
-      playlistId: playlistId,
-      maxResults: 50,
-    };
-    return this.#getApiData(params, (p: any) => youtube.playlistItems.list(p));
-  }
-
-  async getPlaylists(
-    channelId: string,
-    part = [
-      "snippet",
-      "contentDetails",
-      "id",
-      "status",
-      "player",
-      "localizations",
-    ]
-  ) {
-    const params = {
-      auth: this.#YOUTUBE_API_KEY,
-      part: part.join(","),
-      channelId: channelId,
-      maxResults: 50,
-    };
-    return this.#getApiData(params, (params: any) =>
-      youtube.playlists.list(params)
-    );
-  }
 }
 
 class Notion {
@@ -527,15 +778,15 @@ class Notion {
     });
   }
 
-  async makeDatabase(query: any) {
+  async makeDatabase(query: CreateDatabaseParameters) {
     return this.#notion.databases.create(query);
   }
 
-  async makePage(query: any) {
+  async makePage(query: CreatePageParameters) {
     return this.#notion.pages.create(query);
   }
 
-  async getDatabase(query: any) {
+  async getDatabase(query: GetDatabaseParameters) {
     return this.#notion.databases.retrieve(query);
   }
 
@@ -546,7 +797,7 @@ class Notion {
     return this.getDatabase(query);
   }
 
-  async getPage(query: any) {
+  async getPage(query: GetPageParameters) {
     return this.#notion.pages.retrieve(query);
   }
 
@@ -557,7 +808,7 @@ class Notion {
     return this.getPage(query);
   }
 
-  async updatePage(query: any) {
+  async updatePage(query: UpdatePageParameters) {
     return this.#notion.pages.update(query);
   }
 
@@ -569,7 +820,15 @@ class Notion {
     return id;
   }
 
-  static getIdFromApiResponse(response: any) {
+  static getIdFromApiResponse(
+    response:
+      | GetPageResponse
+      | GetDatabaseResponse
+      | CreatePageResponse
+      | CreateDatabaseResponse
+      | UpdatePageResponse
+      | UpdateDatabaseResponse
+  ) {
     return response.id.replace(/-/g, "");
   }
 }
