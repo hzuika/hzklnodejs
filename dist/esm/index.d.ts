@@ -59,6 +59,7 @@ declare class Youtube {
     static getBannerFromChannelApiData(channelApiData: YoutubeChannelApiData): string | null | undefined;
     static getTitleFromPlaylistApiData(apiData: YoutubePlaylistApiData): string | null | undefined;
     static getPlaylistIdFromPlaylistApiData(apiData: YoutubePlaylistApiData): string | null | undefined;
+    static getChannelIdFromPlaylistApiData(apiData: YoutubePlaylistApiData): string | null | undefined;
     static getVideoIdFromPlaylistItemApiData(apiData: YoutubePlaylistItemApiData): string | null | undefined;
     static getVideoUrlFromPlaylistItemsApiData(apiData: YoutubePlaylistItemApiData): string;
     static getThumbnailFromVideoId(videoId: string): string;

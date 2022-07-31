@@ -384,7 +384,7 @@ class YoutubeApiDataUtil {
     return apiData.id;
   }
 
-  static getChannelId(apiData: YoutubeVideoApiData) {
+  static getChannelId(apiData: YoutubeVideoApiData | YoutubePlaylistApiData) {
     return apiData.snippet?.channelId;
   }
 
@@ -650,6 +650,10 @@ class Youtube {
     return YoutubeApiDataUtil.getId(apiData);
   }
 
+  static getChannelIdFromPlaylistApiData(apiData: YoutubePlaylistApiData) {
+    return YoutubeApiDataUtil.getChannelId(apiData);
+  }
+
   // PlaylistItem API Data
   static getVideoIdFromPlaylistItemApiData(
     apiData: YoutubePlaylistItemApiData
@@ -680,6 +684,7 @@ class Youtube {
     return new YoutubeVideoId(videoId).toUrl();
   }
 
+  // Channel ID
   static getChannelIdFromUrl(url: string) {
     return YoutubeChannelId.getIdFromUrl(url);
   }
