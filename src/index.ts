@@ -619,6 +619,20 @@ class Youtube {
     return YoutubeApiDataUtil.getId(channelApiData);
   }
 
+  static getTitleFromChannelApiData(channelApiData: YoutubeChannelApiData) {
+    return YoutubeApiDataUtil.getTitle(channelApiData);
+  }
+
+  static getPublishedAtFromChannelApiData(
+    channelApiData: YoutubeChannelApiData
+  ) {
+    return YoutubeApiDataUtil.getPublishedAt(channelApiData);
+  }
+
+  static getThumbnailFromChannelApiData(channelApiData: YoutubeChannelApiData) {
+    return YoutubeApiDataUtil.getThumbnail(channelApiData);
+  }
+
   static getViewCountFromChannelApiData(channelApiData: YoutubeChannelApiData) {
     return YoutubeApiDataUtil.getViewCount(channelApiData);
   }

@@ -50,6 +50,9 @@ declare class Youtube {
     static getViewCountFromVideoApiData(videoApiData: YoutubeVideoApiData): string | null | undefined;
     static getLikeCountFromVideoApiData(videoApiData: YoutubeVideoApiData): string | null | undefined;
     static getChannelIdFromChannelApiData(channelApiData: YoutubeChannelApiData): string | null | undefined;
+    static getTitleFromChannelApiData(channelApiData: YoutubeChannelApiData): string | null | undefined;
+    static getPublishedAtFromChannelApiData(channelApiData: YoutubeChannelApiData): string | null | undefined;
+    static getThumbnailFromChannelApiData(channelApiData: YoutubeChannelApiData): string | null | undefined;
     static getViewCountFromChannelApiData(channelApiData: YoutubeChannelApiData): string | null | undefined;
     static getVideoCountFromChannelApiData(channelApiData: YoutubeChannelApiData): string | null | undefined;
     static getSubscriberCountFromChannelApiData(channelApiData: YoutubeChannelApiData): string | null | undefined;
