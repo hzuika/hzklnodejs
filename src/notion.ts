@@ -1,3 +1,1 @@
-export namespace Notion {
-
-}
+export namespace Notion {}
