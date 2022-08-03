@@ -2,7 +2,7 @@ import { google, youtube_v3 } from "googleapis";
 const youtube = google.youtube("v3");
 import { GaxiosPromise } from "googleapis/build/src/apis/abusiveexperiencereport";
 import { Opaque } from "type-fest";
-import { getChunkFromArray, replaceString } from ".";
+import { getChunkFromArray, removeDuplicatesFromArray, replaceString } from ".";
 export namespace Youtube {
   export type VideoId = Opaque<string, "VideoId">;
   export const VideoId = {
@@ -54,6 +54,13 @@ export namespace Youtube {
 
     toPlaylistId: (id: ChannelId): UploadPlaylistId => {
       return UploadPlaylistId.new(replaceString(id, 1, "U"));
+    },
+
+    searchFromText(text: string) {
+      const searchString = /https:\/\/www.youtube.com\/channel\/(.{24})/g;
+      return removeDuplicatesFromArray(
+        [...text.matchAll(searchString)].map((elem) => ChannelId.new(elem[1]))
+      );
     },
   };
 
