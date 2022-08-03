@@ -1,4 +1,6 @@
-import { replaceString } from ".";
+import { google } from "googleapis";
+const youtube = google.youtube("v3");
+import { getChunkFromArray, replaceString } from ".";
 export var Youtube;
 (function (Youtube) {
     Youtube.VideoId = {
@@ -77,6 +79,100 @@ export var Youtube;
         apiKey;
         constructor(apiKey) {
             this.apiKey = apiKey;
+        }
+        async getData(params, apiFunction) {
+            const dataList = [];
+            params.pageToken = undefined;
+            do {
+                const res = await apiFunction(params);
+                Array.prototype.push.apply(dataList, res.data.items ? res.data.items : []);
+                params.pageToken = res.data.nextPageToken
+                    ? res.data.nextPageToken
+                    : undefined;
+            } while (params.pageToken);
+            return dataList;
+        }
+        async getDataFromIdList(idList, params, apiFunction) {
+            const youtubeApiData = await Promise.all(getChunkFromArray(idList, 50).map((idList50) => {
+                params.id = idList50;
+                return this.getData(params, apiFunction);
+            }));
+            return youtubeApiData.flat();
+        }
+        async getVideos(videoIdList, part = [
+            "id",
+            "liveStreamingDetails",
+            "localizations",
+            "player",
+            "recordingDetails",
+            "snippet",
+            "statistics",
+            "status",
+            "topicDetails",
+        ]) {
+            const params = {
+                auth: this.apiKey,
+                part: part,
+                maxResults: 50,
+            };
+            return this.getDataFromIdList(videoIdList, params, (p) => youtube.videos.list(p));
+        }
+        async getChannels(channelIdList, part = [
+            "brandingSettings",
+            "contentDetails",
+            "contentOwnerDetails",
+            "id",
+            "localizations",
+            "snippet",
+            "statistics",
+            "status",
+            "topicDetails",
+        ]) {
+            const params = {
+                auth: this.apiKey,
+                part: part,
+                maxResults: 50,
+            };
+            return this.getDataFromIdList(channelIdList, params, (p) => youtube.channels.list(p));
+        }
+        async getPlaylistItems(playlistId, part = [
+            "snippet",
+            "contentDetails",
+            "id",
+            "status",
+        ]) {
+            const params = {
+                auth: this.apiKey,
+                part: part,
+                playlistId: playlistId,
+                maxResults: 50,
+            };
+            return this.getData(params, (p) => youtube.playlistItems.list(p));
+        }
+        async getPlaylists(channelId, part = [
+            "snippet",
+            "contentDetails",
+            "id",
+            "status",
+            "player",
+            "localizations",
+        ]) {
+            const params = {
+                auth: this.apiKey,
+                part: part,
+                channelId: channelId,
+                maxResults: 50,
+            };
+            return this.getData(params, (params) => youtube.playlists.list(params));
+        }
+        async getCommentThreads(videoId, part = ["id", "snippet", "replies"]) {
+            const params = {
+                auth: this.apiKey,
+                part: part,
+                videoId: videoId,
+                maxResults: 100,
+            };
+            return this.getData(params, (p) => youtube.commentThreads.list(p));
         }
     }
     Youtube.Api = Api;
