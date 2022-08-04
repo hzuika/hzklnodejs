@@ -105,46 +105,109 @@ export namespace Youtube {
     },
   };
 
-  type VideoApiData = youtube_v3.Schema$Video;
+  type Id<T extends Extract<ApiType, "Video" | "Channel" | "Playlist">> =
+    T extends "Video"
+      ? VideoId
+      : T extends "Channel"
+      ? ChannelId
+      : T extends "Playlist"
+      ? PlaylistId
+      : string;
 
-  type ChannelApiData = youtube_v3.Schema$Channel;
+  export type VideoApiData = youtube_v3.Schema$Video;
 
-  type PlaylistApiData = youtube_v3.Schema$Playlist;
+  export type ChannelApiData = youtube_v3.Schema$Channel;
 
-  type PlaylistItemApiData = youtube_v3.Schema$PlaylistItem;
+  export type PlaylistApiData = youtube_v3.Schema$Playlist;
 
-  type ApiData =
-    | VideoApiData
-    | ChannelApiData
-    | PlaylistApiData
-    | PlaylistItemApiData;
+  export type PlaylistItemApiData = youtube_v3.Schema$PlaylistItem;
+
+  export type ApiType = "Video" | "Channel" | "Playlist" | "PlaylistItem";
+  type ApiData<T extends ApiType> = T extends "Video"
+    ? VideoApiData
+    : T extends "Channel"
+    ? ChannelApiData
+    : T extends "Playlist"
+    ? PlaylistApiData
+    : T extends "PlaylistItem"
+    ? PlaylistItemApiData
+    : unknown;
+
+  export const VideoApiData = {
+    getId: (data: VideoApiData) => {
+      return data.id;
+    },
+  };
+
+  export const ChannelApiData = {
+    getId: (data: ChannelApiData) => {
+      return data.id;
+    },
+  };
+
+  export const PlaylistApiData = {
+    getId: (data: PlaylistApiData) => {
+      return data.id;
+    },
+  };
+
+  export const PlaylistItemApiData = {
+    getId: (data: PlaylistItemApiData) => {
+      return data.id;
+    },
+  };
 
   type VideoApiParameter = youtube_v3.Params$Resource$Videos$List;
-  type ChannelApiParameter = youtube_v3.Params$Resource$Channels$List;
-  type PlaylistApiParameter = youtube_v3.Params$Resource$Playlists$List;
-  type PlaylistItemApiParameter = youtube_v3.Params$Resource$Playlistitems$List;
-  type CommentThreadApiParameter =
-    youtube_v3.Params$Resource$Commentthreads$List;
 
-  type ApiParametar =
-    | VideoApiParameter
-    | ChannelApiParameter
-    | PlaylistApiParameter
-    | PlaylistItemApiParameter
-    | CommentThreadApiParameter;
+  type ChannelApiParameter = youtube_v3.Params$Resource$Channels$List;
+
+  type PlaylistApiParameter = youtube_v3.Params$Resource$Playlists$List;
+
+  type PlaylistItemApiParameter = youtube_v3.Params$Resource$Playlistitems$List;
+
+  type ApiParameter<T extends ApiType> = T extends "Video"
+    ? VideoApiParameter
+    : T extends "Channel"
+    ? ChannelApiParameter
+    : T extends "Playlist"
+    ? PlaylistApiParameter
+    : T extends "PlaylistItem"
+    ? PlaylistItemApiParameter
+    : unknown;
 
   type VideoApiResponse = youtube_v3.Schema$VideoListResponse;
-  type ChannelApiResponse = youtube_v3.Schema$ChannelListResponse;
-  type PlaylistApiResponse = youtube_v3.Schema$PlaylistListResponse;
-  type PlaylistItemApiResponse = youtube_v3.Schema$PlaylistItemListResponse;
-  type CommentThreadApiResponse = youtube_v3.Schema$CommentThreadListResponse;
 
-  type ApiResponse =
-    | VideoApiResponse
-    | ChannelApiResponse
-    | PlaylistApiResponse
-    | PlaylistItemApiResponse
-    | CommentThreadApiResponse;
+  type ChannelApiResponse = youtube_v3.Schema$ChannelListResponse;
+
+  type PlaylistApiResponse = youtube_v3.Schema$PlaylistListResponse;
+
+  type PlaylistItemApiResponse = youtube_v3.Schema$PlaylistItemListResponse;
+
+  type VideoApiFunction = (
+    p: VideoApiParameter
+  ) => GaxiosPromise<VideoApiResponse>;
+
+  type ChannelApiFunction = (
+    p: ChannelApiParameter
+  ) => GaxiosPromise<ChannelApiResponse>;
+
+  type PlaylistApiFunction = (
+    p: PlaylistApiParameter
+  ) => GaxiosPromise<PlaylistApiResponse>;
+
+  type PlaylistItemApiFunction = (
+    p: PlaylistItemApiParameter
+  ) => GaxiosPromise<PlaylistItemApiResponse>;
+
+  type ApiFunction<T extends ApiType> = T extends "Video"
+    ? VideoApiFunction
+    : T extends "Channel"
+    ? ChannelApiFunction
+    : T extends "Playlist"
+    ? PlaylistApiFunction
+    : T extends "PlaylistItem"
+    ? PlaylistItemApiFunction
+    : unknown;
 
   export class Api {
     private readonly apiKey: string;
@@ -152,11 +215,11 @@ export namespace Youtube {
       this.apiKey = apiKey;
     }
 
-    private async getData(
-      params: ApiParametar,
-      apiFunction: (p: ApiParametar) => GaxiosPromise<ApiResponse>
-    ) {
-      const dataList: ApiData[] = [];
+    private async getData<T extends ApiType>(
+      params: ApiParameter<T>,
+      apiFunction: ApiFunction<T>
+    ): Promise<ApiData<T>[]> {
+      const dataList: ApiData<T>[] = [];
       params.pageToken = undefined;
       do {
         const res = await apiFunction(params);
@@ -171,15 +234,13 @@ export namespace Youtube {
       return dataList;
     }
 
-    private async getDataFromIdList(
-      idList: (VideoId | ChannelId | PlaylistId)[],
-      params: ApiParametar,
-      apiFunction: (p: ApiParametar) => GaxiosPromise<ApiResponse>
-    ) {
+    private async getDataFromIdList<
+      T extends Extract<ApiType, "Video" | "Channel">
+    >(idList: Id<T>[], params: ApiParameter<T>, apiFunction: ApiFunction<T>) {
       const youtubeApiData = await Promise.all(
         getChunkFromArray(idList, 50).map((idList50) => {
           params.id = idList50;
-          return this.getData(params, apiFunction);
+          return this.getData<T>(params, apiFunction);
         })
       );
       return youtubeApiData.flat();
@@ -204,7 +265,7 @@ export namespace Youtube {
         part: part,
         maxResults: 50,
       };
-      return this.getDataFromIdList(
+      return this.getDataFromIdList<"Video">(
         videoIdList,
         params,
         (p: VideoApiParameter) => youtube.videos.list(p)
@@ -230,7 +291,7 @@ export namespace Youtube {
         part: part,
         maxResults: 50,
       };
-      return this.getDataFromIdList(
+      return this.getDataFromIdList<"Channel">(
         channelIdList,
         params,
         (p: ChannelApiParameter) => youtube.channels.list(p)
@@ -252,8 +313,9 @@ export namespace Youtube {
         playlistId: playlistId,
         maxResults: 50,
       };
-      return this.getData(params, (p: PlaylistItemApiParameter) =>
-        youtube.playlistItems.list(p)
+      return this.getData<"PlaylistItem">(
+        params,
+        (p: PlaylistItemApiParameter) => youtube.playlistItems.list(p)
       );
     }
 
@@ -274,23 +336,8 @@ export namespace Youtube {
         channelId: channelId,
         maxResults: 50,
       };
-      return this.getData(params, (params: PlaylistApiParameter) =>
+      return this.getData<"Playlist">(params, (params: PlaylistApiParameter) =>
         youtube.playlists.list(params)
-      );
-    }
-
-    async getCommentThreads(
-      videoId: VideoId,
-      part = ["id", "snippet", "replies"]
-    ) {
-      const params: CommentThreadApiParameter = {
-        auth: this.apiKey,
-        part: part,
-        videoId: videoId,
-        maxResults: 100,
-      };
-      return this.getData(params, (p: CommentThreadApiParameter) =>
-        youtube.commentThreads.list(p)
       );
     }
   }

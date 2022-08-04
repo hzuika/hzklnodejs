@@ -3,13 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Notion = exports.Youtube = exports.sortJson = exports.sleep = exports.equalArray = exports.getJapaneseIsoStringFromUtcIsoString = exports.removeDuplicatesFromArray = exports.replaceString = exports.getTsvFromJson = exports.getCsvFromJson = exports.getChunkFromArray = exports.getHtmlFromUrl = exports.getJsonFromString = exports.getStringFromJson = exports.getFileNameWithoutExtension = exports.getFileName = exports.getExtension = exports.getDirectoryName = exports.writeFileJson = exports.writeFileBinary = exports.writeFileText = exports.readFileJson = exports.readFileBinary = exports.readFileText = exports.makeDirectory = exports.existPath = void 0;
+exports.Notion = exports.Youtube = exports.YoutubeLegacy = exports.sortJson = exports.sleep = exports.equalArray = exports.getJapaneseIsoStringFromUtcIsoString = exports.removeDuplicatesFromArray = exports.replaceString = exports.getTsvFromJson = exports.getCsvFromJson = exports.getChunkFromArray = exports.getHtmlFromUrl = exports.getJsonFromString = exports.getStringFromJson = exports.getFileNameWithoutExtension = exports.getFileName = exports.getExtension = exports.getDirectoryName = exports.writeFileJson = exports.writeFileBinary = exports.writeFileText = exports.readFileJson = exports.readFileBinary = exports.readFileText = exports.makeDirectory = exports.existPath = void 0;
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
 const googleapis_1 = require("googleapis");
 const youtube = googleapis_1.google.youtube("v3");
 const axios_1 = __importDefault(require("axios"));
 const client_1 = require("@notionhq/client");
+const youtube_1 = require("./youtube");
+Object.defineProperty(exports, "Youtube", { enumerable: true, get: function () { return youtube_1.Youtube; } });
 const existPath = async (filepath) => {
     try {
         await fs_1.promises.access(filepath);
@@ -303,7 +305,7 @@ class YoutubeApiDataUtil {
         return apiData.brandingSettings?.image?.bannerExternalUrl;
     }
 }
-class Youtube {
+class YoutubeLegacy {
     #YOUTUBE_API_KEY;
     constructor(apiKey) {
         this.#YOUTUBE_API_KEY = apiKey;
@@ -465,11 +467,11 @@ class Youtube {
         return YoutubeApiDataUtil.getVideoId(apiData);
     }
     static getVideoUrlFromPlaylistItemsApiData(apiData) {
-        const videoId = Youtube.getVideoIdFromPlaylistItemApiData(apiData);
+        const videoId = YoutubeLegacy.getVideoIdFromPlaylistItemApiData(apiData);
         if (videoId == undefined) {
             return "";
         }
-        return Youtube.getVideoUrlFromVideoId(videoId);
+        return YoutubeLegacy.getVideoUrlFromVideoId(videoId);
     }
     // Video ID
     static getThumbnailFromVideoId(videoId) {
@@ -515,7 +517,7 @@ class Youtube {
         return apiData;
     }
 }
-exports.Youtube = Youtube;
+exports.YoutubeLegacy = YoutubeLegacy;
 class Notion {
     #notion;
     constructor(apiKey) {

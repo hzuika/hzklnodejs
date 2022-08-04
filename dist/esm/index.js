@@ -4,6 +4,7 @@ import { google } from "googleapis";
 const youtube = google.youtube("v3");
 import axios from "axios";
 import { Client } from "@notionhq/client";
+import { Youtube } from "./youtube";
 const existPath = async (filepath) => {
     try {
         await fs.access(filepath);
@@ -273,7 +274,7 @@ class YoutubeApiDataUtil {
         return apiData.brandingSettings?.image?.bannerExternalUrl;
     }
 }
-class Youtube {
+class YoutubeLegacy {
     #YOUTUBE_API_KEY;
     constructor(apiKey) {
         this.#YOUTUBE_API_KEY = apiKey;
@@ -435,11 +436,11 @@ class Youtube {
         return YoutubeApiDataUtil.getVideoId(apiData);
     }
     static getVideoUrlFromPlaylistItemsApiData(apiData) {
-        const videoId = Youtube.getVideoIdFromPlaylistItemApiData(apiData);
+        const videoId = YoutubeLegacy.getVideoIdFromPlaylistItemApiData(apiData);
         if (videoId == undefined) {
             return "";
         }
-        return Youtube.getVideoUrlFromVideoId(videoId);
+        return YoutubeLegacy.getVideoUrlFromVideoId(videoId);
     }
     // Video ID
     static getThumbnailFromVideoId(videoId) {
@@ -530,4 +531,4 @@ class Notion {
         return response.id.replace(/-/g, "");
     }
 }
-export { existPath, makeDirectory, readFileText, readFileBinary, readFileJson, writeFileText, writeFileBinary, writeFileJson, getDirectoryName, getExtension, getFileName, getFileNameWithoutExtension, getStringFromJson, getJsonFromString, getHtmlFromUrl, getChunkFromArray, getCsvFromJson, getTsvFromJson, replaceString, removeDuplicatesFromArray, getJapaneseIsoStringFromUtcIsoString, equalArray, sleep, sortJson, Youtube, Notion, };
+export { existPath, makeDirectory, readFileText, readFileBinary, readFileJson, writeFileText, writeFileBinary, writeFileJson, getDirectoryName, getExtension, getFileName, getFileNameWithoutExtension, getStringFromJson, getJsonFromString, getHtmlFromUrl, getChunkFromArray, getCsvFromJson, getTsvFromJson, replaceString, removeDuplicatesFromArray, getJapaneseIsoStringFromUtcIsoString, equalArray, sleep, sortJson, YoutubeLegacy, Youtube, Notion, };

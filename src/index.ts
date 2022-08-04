@@ -18,6 +18,7 @@ import {
   UpdatePageParameters,
   UpdatePageResponse,
 } from "@notionhq/client/build/src/api-endpoints";
+import { Youtube } from "./youtube";
 
 const existPath = async (filepath: string) => {
   try {
@@ -421,12 +422,31 @@ class YoutubeApiDataUtil {
   }
 }
 
-class Youtube {
+class YoutubeLegacy {
   #YOUTUBE_API_KEY;
 
   constructor(apiKey: string) {
     this.#YOUTUBE_API_KEY = apiKey;
   }
+
+  async #getApiData(
+    params: YoutubeApiParametar,
+    apiCallback: (p: YoutubeApiParametar) => GaxiosPromise<YoutubeApiResponse>
+  ): Promise<YoutubeApiData[]>;
+
+  async #getApiData(
+    params: YoutubeVideoApiParameter,
+    apiCallback: (
+      p: YoutubeVideoApiParameter
+    ) => GaxiosPromise<YoutubeVideoApiResponse>
+  ): Promise<YoutubeVideoApiData[]>;
+
+  async #getApiData(
+    params: YoutubeChannelApiParameter,
+    apiCallback: (
+      p: YoutubeChannelApiParameter
+    ) => GaxiosPromise<YoutubeChannelApiResponse>
+  ): Promise<YoutubeChannelApiData[]>;
 
   async #getApiData(
     params: YoutubeApiParametar,
@@ -446,6 +466,20 @@ class Youtube {
     } while (params.pageToken);
     return dataList;
   }
+
+  async #getApiDataFromIdList(
+    idList: string[],
+    params: YoutubeApiParametar,
+    apiCallback: (p: YoutubeApiParametar) => GaxiosPromise<YoutubeApiResponse>
+  ): Promise<YoutubeApiData[]>;
+
+  async #getApiDataFromIdList(
+    idList: string[],
+    params: YoutubeChannelApiParameter,
+    apiCallback: (
+      p: YoutubeChannelApiParameter
+    ) => GaxiosPromise<YoutubeChannelApiResponse>
+  ): Promise<YoutubeChannelApiData[]>;
 
   async #getApiDataFromIdList(
     idList: string[],
@@ -664,11 +698,11 @@ class Youtube {
   static getVideoUrlFromPlaylistItemsApiData(
     apiData: YoutubePlaylistItemApiData
   ) {
-    const videoId = Youtube.getVideoIdFromPlaylistItemApiData(apiData);
+    const videoId = YoutubeLegacy.getVideoIdFromPlaylistItemApiData(apiData);
     if (videoId == undefined) {
       return "";
     }
-    return Youtube.getVideoUrlFromVideoId(videoId);
+    return YoutubeLegacy.getVideoUrlFromVideoId(videoId);
   }
 
   // Video ID
@@ -817,6 +851,7 @@ export {
   equalArray,
   sleep,
   sortJson,
+  YoutubeLegacy,
   Youtube,
   Notion,
 };

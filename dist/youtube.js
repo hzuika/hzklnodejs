@@ -45,6 +45,10 @@ var Youtube;
         toPlaylistId: (id) => {
             return Youtube.UploadPlaylistId.new((0, _1.replaceString)(id, 1, "U"));
         },
+        searchFromText(text) {
+            const searchString = /https:\/\/www.youtube.com\/channel\/(.{24})/g;
+            return (0, _1.removeDuplicatesFromArray)([...text.matchAll(searchString)].map((elem) => Youtube.ChannelId.new(elem[1])));
+        },
     };
     Youtube.UploadPlaylistId = {
         new: (id) => {
@@ -76,6 +80,26 @@ var Youtube;
         urlPrefix: "https://www.youtube.com/playlist?list=",
         toUrl: (id) => {
             return `${Youtube.PlaylistId.urlPrefix}${id}`;
+        },
+    };
+    Youtube.VideoApiData = {
+        getId: (data) => {
+            return data.id;
+        },
+    };
+    Youtube.ChannelApiData = {
+        getId: (data) => {
+            return data.id;
+        },
+    };
+    Youtube.PlaylistApiData = {
+        getId: (data) => {
+            return data.id;
+        },
+    };
+    Youtube.PlaylistItemApiData = {
+        getId: (data) => {
+            return data.id;
         },
     };
     class Api {

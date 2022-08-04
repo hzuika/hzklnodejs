@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { youtube_v3 } from "googleapis";
 import { CreateDatabaseParameters, CreateDatabaseResponse, CreatePageParameters, CreatePageResponse, GetDatabaseParameters, GetDatabaseResponse, GetPageParameters, GetPageResponse, UpdateDatabaseResponse, UpdatePageParameters, UpdatePageResponse } from "@notionhq/client/build/src/api-endpoints";
+import { Youtube } from "./youtube";
 declare const existPath: (filepath: string) => Promise<boolean>;
 declare const makeDirectory: (dirpath: string) => Promise<string | undefined>;
 declare const readFileText: (filepath: string) => Promise<string>;
@@ -32,12 +33,12 @@ declare type YoutubeChannelApiData = youtube_v3.Schema$Channel;
 declare type YoutubePlaylistApiData = youtube_v3.Schema$Playlist;
 declare type YoutubePlaylistItemApiData = youtube_v3.Schema$PlaylistItem;
 declare type YoutubeApiData = YoutubeVideoApiData | YoutubeChannelApiData | YoutubePlaylistApiData | YoutubePlaylistItemApiData;
-declare class Youtube {
+declare class YoutubeLegacy {
     #private;
     constructor(apiKey: string);
     getCommentThreads(videoId: string, part?: string[]): Promise<YoutubeApiData[]>;
     getVideos(videoIdList: string[], part?: string[]): Promise<YoutubeApiData[]>;
-    getChannels(channelIdList: string[], part?: string[]): Promise<YoutubeApiData[]>;
+    getChannels(channelIdList: string[], part?: string[]): Promise<youtube_v3.Schema$Channel[]>;
     getPlaylistItems(playlistId: string, part?: string[]): Promise<YoutubeApiData[]>;
     getPlaylists(channelId: string, part?: string[]): Promise<YoutubeApiData[]>;
     static getChannelIdFromVideoApiData(videoApiData: YoutubeVideoApiData): string | null | undefined;
@@ -87,5 +88,5 @@ declare class Notion {
     static getIdFromUrl(urlString: string): string;
     static getIdFromApiResponse(response: GetPageResponse | GetDatabaseResponse | CreatePageResponse | CreateDatabaseResponse | UpdatePageResponse | UpdateDatabaseResponse): string;
 }
-export { existPath, makeDirectory, readFileText, readFileBinary, readFileJson, writeFileText, writeFileBinary, writeFileJson, getDirectoryName, getExtension, getFileName, getFileNameWithoutExtension, getStringFromJson, getJsonFromString, getHtmlFromUrl, getChunkFromArray, getCsvFromJson, getTsvFromJson, replaceString, removeDuplicatesFromArray, getJapaneseIsoStringFromUtcIsoString, equalArray, sleep, sortJson, Youtube, Notion, };
+export { existPath, makeDirectory, readFileText, readFileBinary, readFileJson, writeFileText, writeFileBinary, writeFileJson, getDirectoryName, getExtension, getFileName, getFileNameWithoutExtension, getStringFromJson, getJsonFromString, getHtmlFromUrl, getChunkFromArray, getCsvFromJson, getTsvFromJson, replaceString, removeDuplicatesFromArray, getJapaneseIsoStringFromUtcIsoString, equalArray, sleep, sortJson, YoutubeLegacy, Youtube, Notion, };
 //# sourceMappingURL=index.d.ts.map

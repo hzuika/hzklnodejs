@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 const youtube = google.youtube("v3");
-import { getChunkFromArray, replaceString } from ".";
+import { getChunkFromArray, removeDuplicatesFromArray, replaceString } from ".";
 export var Youtube;
 (function (Youtube) {
     Youtube.VideoId = {
@@ -42,6 +42,10 @@ export var Youtube;
         toPlaylistId: (id) => {
             return Youtube.UploadPlaylistId.new(replaceString(id, 1, "U"));
         },
+        searchFromText(text) {
+            const searchString = /https:\/\/www.youtube.com\/channel\/(.{24})/g;
+            return removeDuplicatesFromArray([...text.matchAll(searchString)].map((elem) => Youtube.ChannelId.new(elem[1])));
+        },
     };
     Youtube.UploadPlaylistId = {
         new: (id) => {
@@ -73,6 +77,26 @@ export var Youtube;
         urlPrefix: "https://www.youtube.com/playlist?list=",
         toUrl: (id) => {
             return `${Youtube.PlaylistId.urlPrefix}${id}`;
+        },
+    };
+    Youtube.VideoApiData = {
+        getId: (data) => {
+            return data.id;
+        },
+    };
+    Youtube.ChannelApiData = {
+        getId: (data) => {
+            return data.id;
+        },
+    };
+    Youtube.PlaylistApiData = {
+        getId: (data) => {
+            return data.id;
+        },
+    };
+    Youtube.PlaylistItemApiData = {
+        getId: (data) => {
+            return data.id;
         },
     };
     class Api {
