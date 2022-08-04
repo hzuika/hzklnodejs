@@ -9,6 +9,7 @@ var Youtube;
     Youtube.VideoId = {
         urlPrefix: "https://www.youtube.com/watch?v=",
         shortUrlPrefix: "https://youtu.be/",
+        validLength: 11,
         new: (id) => {
             if (!Youtube.VideoId.validate(id)) {
                 throw new Error(`${id} is not valid.`);
@@ -16,7 +17,7 @@ var Youtube;
             return id;
         },
         validate: (id) => {
-            return id.length === 11;
+            return id.length === Youtube.VideoId.validLength;
         },
         toUrl: (id) => {
             return `${Youtube.VideoId.urlPrefix}${id}`;
@@ -30,6 +31,7 @@ var Youtube;
     };
     Youtube.ChannelId = {
         urlPrefix: "https://www.youtube.com/channel/",
+        validLength: 24,
         new: (id) => {
             if (!Youtube.ChannelId.validate(id)) {
                 throw new Error(`${id} is not valid.`);
@@ -37,7 +39,7 @@ var Youtube;
             return id;
         },
         validate: (id) => {
-            return id.substring(0, 2) === "UC" && id.length === 24;
+            return id.substring(0, 2) === "UC" && id.length === Youtube.ChannelId.validLength;
         },
         toUrl: (id) => {
             return `${Youtube.ChannelId.urlPrefix}${id}`;
@@ -51,6 +53,7 @@ var Youtube;
         },
     };
     Youtube.UploadPlaylistId = {
+        validLength: 24,
         new: (id) => {
             if (!Youtube.UploadPlaylistId.validate(id)) {
                 throw new Error(`${id} is not valid.`);
@@ -58,14 +61,15 @@ var Youtube;
             return id;
         },
         validate: (id) => {
-            return id.substring(0, 2) === "UU" && id.length === 24;
+            return (id.substring(0, 2) === "UU" &&
+                id.length === Youtube.UploadPlaylistId.validLength);
         },
         toChannelId: (id) => {
             return Youtube.ChannelId.new((0, _1.replaceString)(id, 1, "C"));
         },
     };
     Youtube.RegularPlaylistId = {
-        urlPrefix: "https://www.youtube.com/playlist?list=",
+        validLength: 34,
         new: (id) => {
             if (!Youtube.RegularPlaylistId.validate(id)) {
                 throw new Error(`${id} is not valid.`);
@@ -73,7 +77,8 @@ var Youtube;
             return id;
         },
         validate: (id) => {
-            return id.substring(0, 2) === "PL" && id.length === 34;
+            return (id.substring(0, 2) === "PL" &&
+                id.length === Youtube.RegularPlaylistId.validLength);
         },
     };
     Youtube.PlaylistId = {
@@ -191,15 +196,6 @@ var Youtube;
                 maxResults: 50,
             };
             return this.getData(params, (params) => youtube.playlists.list(params));
-        }
-        async getCommentThreads(videoId, part = ["id", "snippet", "replies"]) {
-            const params = {
-                auth: this.apiKey,
-                part: part,
-                videoId: videoId,
-                maxResults: 100,
-            };
-            return this.getData(params, (p) => youtube.commentThreads.list(p));
         }
     }
     Youtube.Api = Api;

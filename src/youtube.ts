@@ -8,6 +8,7 @@ export namespace Youtube {
   export const VideoId = {
     urlPrefix: "https://www.youtube.com/watch?v=",
     shortUrlPrefix: "https://youtu.be/",
+    validLength: 11,
 
     new: (id: string): VideoId => {
       if (!VideoId.validate(id)) {
@@ -17,7 +18,7 @@ export namespace Youtube {
     },
 
     validate: (id: string): id is VideoId => {
-      return id.length === 11;
+      return id.length === VideoId.validLength;
     },
 
     toUrl: (id: VideoId): string => {
@@ -36,6 +37,7 @@ export namespace Youtube {
   export type ChannelId = Opaque<string, "ChannelId">;
   export const ChannelId = {
     urlPrefix: "https://www.youtube.com/channel/",
+    validLength: 24,
 
     new: (id: string): ChannelId => {
       if (!ChannelId.validate(id)) {
@@ -45,7 +47,7 @@ export namespace Youtube {
     },
 
     validate: (id: string): id is ChannelId => {
-      return id.substring(0, 2) === "UC" && id.length === 24;
+      return id.substring(0, 2) === "UC" && id.length === ChannelId.validLength;
     },
 
     toUrl: (id: ChannelId): string => {
@@ -66,6 +68,8 @@ export namespace Youtube {
 
   export type UploadPlaylistId = Opaque<string, "UploadPlaylistId">;
   export const UploadPlaylistId = {
+    validLength: 24,
+
     new: (id: string): UploadPlaylistId => {
       if (!UploadPlaylistId.validate(id)) {
         throw new Error(`${id} is not valid.`);
@@ -74,7 +78,10 @@ export namespace Youtube {
     },
 
     validate: (id: string): id is UploadPlaylistId => {
-      return id.substring(0, 2) === "UU" && id.length === 24;
+      return (
+        id.substring(0, 2) === "UU" &&
+        id.length === UploadPlaylistId.validLength
+      );
     },
 
     toChannelId: (id: UploadPlaylistId): ChannelId => {
@@ -84,7 +91,8 @@ export namespace Youtube {
 
   export type RegularPlaylistId = Opaque<string, "RegularPlaylistId">;
   export const RegularPlaylistId = {
-    urlPrefix: "https://www.youtube.com/playlist?list=",
+    validLength: 34,
+
     new: (id: string): RegularPlaylistId => {
       if (!RegularPlaylistId.validate(id)) {
         throw new Error(`${id} is not valid.`);
@@ -93,7 +101,10 @@ export namespace Youtube {
     },
 
     validate: (id: string): id is RegularPlaylistId => {
-      return id.substring(0, 2) === "PL" && id.length === 34;
+      return (
+        id.substring(0, 2) === "PL" &&
+        id.length === RegularPlaylistId.validLength
+      );
     },
   };
 

@@ -5,6 +5,7 @@ export declare namespace Youtube {
     const VideoId: {
         urlPrefix: string;
         shortUrlPrefix: string;
+        validLength: number;
         new: (id: string) => VideoId;
         validate: (id: string) => id is VideoId;
         toUrl: (id: VideoId) => string;
@@ -14,6 +15,7 @@ export declare namespace Youtube {
     type ChannelId = Opaque<string, "ChannelId">;
     const ChannelId: {
         urlPrefix: string;
+        validLength: number;
         new: (id: string) => ChannelId;
         validate: (id: string) => id is ChannelId;
         toUrl: (id: ChannelId) => string;
@@ -22,13 +24,14 @@ export declare namespace Youtube {
     };
     type UploadPlaylistId = Opaque<string, "UploadPlaylistId">;
     const UploadPlaylistId: {
+        validLength: number;
         new: (id: string) => UploadPlaylistId;
         validate: (id: string) => id is UploadPlaylistId;
         toChannelId: (id: UploadPlaylistId) => ChannelId;
     };
     type RegularPlaylistId = Opaque<string, "RegularPlaylistId">;
     const RegularPlaylistId: {
-        urlPrefix: string;
+        validLength: number;
         new: (id: string) => RegularPlaylistId;
         validate: (id: string) => id is RegularPlaylistId;
     };
@@ -41,6 +44,7 @@ export declare namespace Youtube {
     type ChannelApiData = youtube_v3.Schema$Channel;
     type PlaylistApiData = youtube_v3.Schema$Playlist;
     type PlaylistItemApiData = youtube_v3.Schema$PlaylistItem;
+    type ApiType = "Video" | "Channel" | "Playlist" | "PlaylistItem";
     const VideoApiData: {
         getId: (data: VideoApiData) => string | null | undefined;
     };
@@ -62,7 +66,6 @@ export declare namespace Youtube {
         getChannels(channelIdList: ChannelId[], part?: (keyof ChannelApiData)[]): Promise<youtube_v3.Schema$Channel[]>;
         getPlaylistItems(playlistId: PlaylistId, part?: (keyof PlaylistItemApiData)[]): Promise<youtube_v3.Schema$PlaylistItem[]>;
         getPlaylists(channelId: ChannelId, part?: (keyof PlaylistApiData)[]): Promise<youtube_v3.Schema$Playlist[]>;
-        getCommentThreads(videoId: VideoId, part?: string[]): Promise<youtube_v3.Schema$Video[]>;
     }
 }
 //# sourceMappingURL=youtube.d.ts.map
