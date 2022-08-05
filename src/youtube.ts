@@ -1,7 +1,7 @@
 import { google, youtube_v3 } from "googleapis";
 const youtube = google.youtube("v3");
 import { GaxiosPromise } from "gaxios";
-// import { GaxiosResponse}  from "gaxios"
+import { GaxiosResponse } from "gaxios";
 import { Opaque } from "type-fest";
 import { getChunkFromArray, removeDuplicatesFromArray, replaceString } from ".";
 export namespace Youtube {
@@ -188,21 +188,19 @@ export namespace Youtube {
     : unknown;
 
   type VideoApiResponse = youtube_v3.Schema$VideoListResponse;
-
   type ChannelApiResponse = youtube_v3.Schema$ChannelListResponse;
-
   type PlaylistApiResponse = youtube_v3.Schema$PlaylistListResponse;
-
   type PlaylistItemApiResponse = youtube_v3.Schema$PlaylistItemListResponse;
 
-  // type ApiResponse<T extends ApiType> = T extends "Video" ? VideoApiResponse
-  //   : T extends "Channel"
-  //   ? ChannelApiResponse
-  //   : T extends "Playlist"
-  //   ? PlaylistApiResponse
-  //   : T extends "PlaylistItem"
-  //   ? PlaylistItemApiResponse
-  //   : unknown;
+  type ApiResponse<T extends ApiType> = T extends "Video"
+    ? VideoApiResponse
+    : T extends "Channel"
+    ? ChannelApiResponse
+    : T extends "Playlist"
+    ? PlaylistApiResponse
+    : T extends "PlaylistItem"
+    ? PlaylistItemApiResponse
+    : unknown;
 
   type VideoApiFunction = (
     p: VideoApiParameter
@@ -220,15 +218,9 @@ export namespace Youtube {
     p: PlaylistItemApiParameter
   ) => GaxiosPromise<PlaylistItemApiResponse>;
 
-  type ApiFunction<T extends ApiType> = T extends "Video"
-    ? VideoApiFunction
-    : T extends "Channel"
-    ? ChannelApiFunction
-    : T extends "Playlist"
-    ? PlaylistApiFunction
-    : T extends "PlaylistItem"
-    ? PlaylistItemApiFunction
-    : unknown;
+  type ApiFunction<T extends ApiType> = (
+    params: ApiParameter<T>
+  ) => GaxiosPromise<ApiResponse<T>>;
 
   export class Api {
     private readonly apiKey: string;
@@ -236,32 +228,46 @@ export namespace Youtube {
       this.apiKey = apiKey;
     }
 
-    // private async *iterateVideo(
-    //   apiFunction: ApiFunction<"Video">,
-    //   params: ApiParameter<"Video">
-    // ): AsyncIterableIterator<ApiData<"Video">[]> {
-    //   let nextPageToken: string | null | undefined = params.pageToken;
-    //   do {
-    //     const response: GaxiosResponse<ApiResponse<"Video">> =
-    //       await apiFunction({
-    //         ...params,
-    //         pageToken: nextPageToken,
-    //       });
-    //     yield* response.data.items ? response.data.items : [];
-    //     nextPageToken = response.data.nextPageToken;
-    //   } while (nextPageToken);
-    // }
+    private async *iterateVideo(
+      apiFunction: ApiFunction<"Video">,
+      params: ApiParameter<"Video">
+    ): AsyncIterableIterator<ApiData<"Video">> {
+      let nextPageToken: string | null | undefined = params.pageToken;
+      do {
+        const response: GaxiosResponse<ApiResponse<"Video">> =
+          await apiFunction({
+            ...params,
+            pageToken: nextPageToken,
+          });
+        yield* response.data.items ? response.data.items : [];
+        nextPageToken = response.data.nextPageToken;
+      } while (nextPageToken);
+    }
+
+    async getVideoData(
+      params: ApiParameter<"Video">,
+      apiFunction: ApiFunction<"Video">
+    ): Promise<youtube_v3.Schema$Video[]> {
+      const dataList: ApiData<"Video">[] = [];
+      for await (const data of this.iterateVideo(apiFunction, params)) {
+        dataList.push(data);
+      }
+      return dataList;
+    }
+
     // private async *iterateData<T extends ApiType>(
     //   apiFunction: ApiFunction<T>,
     //   params: ApiParameter<T>
-    // ): AsyncIterableIterator<ApiData<T>[]> {
+    // ): AsyncIterableIterator<ApiData<T>> {
     //   let nextPageToken: string | null | undefined = params.pageToken;
     //   do {
     //     const response: GaxiosResponse<ApiResponse<T>> = await apiFunction({
     //       ...params,
     //       pageToken: nextPageToken,
     //     });
-    //     yield* response.data.items;
+    //     const data: ApiResponse<T> = response.data;
+    //     const items: ApiData<T>[] = data.items ? data.items : [];
+    //     yield* items;
     //     nextPageToken = response.data.nextPageToken;
     //   } while (nextPageToken);
     // }
