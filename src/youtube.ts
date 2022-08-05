@@ -1,6 +1,7 @@
 import { google, youtube_v3 } from "googleapis";
 const youtube = google.youtube("v3");
-import { GaxiosPromise } from "googleapis/build/src/apis/abusiveexperiencereport";
+import { GaxiosPromise } from "gaxios";
+// import { GaxiosResponse}  from "gaxios"
 import { Opaque } from "type-fest";
 import { getChunkFromArray, removeDuplicatesFromArray, replaceString } from ".";
 export namespace Youtube {
@@ -194,6 +195,15 @@ export namespace Youtube {
 
   type PlaylistItemApiResponse = youtube_v3.Schema$PlaylistItemListResponse;
 
+  // type ApiResponse<T extends ApiType> = T extends "Video" ? VideoApiResponse
+  //   : T extends "Channel"
+  //   ? ChannelApiResponse
+  //   : T extends "Playlist"
+  //   ? PlaylistApiResponse
+  //   : T extends "PlaylistItem"
+  //   ? PlaylistItemApiResponse
+  //   : unknown;
+
   type VideoApiFunction = (
     p: VideoApiParameter
   ) => GaxiosPromise<VideoApiResponse>;
@@ -225,6 +235,36 @@ export namespace Youtube {
     constructor(apiKey: string) {
       this.apiKey = apiKey;
     }
+
+    // private async *iterateVideo(
+    //   apiFunction: ApiFunction<"Video">,
+    //   params: ApiParameter<"Video">
+    // ): AsyncIterableIterator<ApiData<"Video">[]> {
+    //   let nextPageToken: string | null | undefined = params.pageToken;
+    //   do {
+    //     const response: GaxiosResponse<ApiResponse<"Video">> =
+    //       await apiFunction({
+    //         ...params,
+    //         pageToken: nextPageToken,
+    //       });
+    //     yield* response.data.items ? response.data.items : [];
+    //     nextPageToken = response.data.nextPageToken;
+    //   } while (nextPageToken);
+    // }
+    // private async *iterateData<T extends ApiType>(
+    //   apiFunction: ApiFunction<T>,
+    //   params: ApiParameter<T>
+    // ): AsyncIterableIterator<ApiData<T>[]> {
+    //   let nextPageToken: string | null | undefined = params.pageToken;
+    //   do {
+    //     const response: GaxiosResponse<ApiResponse<T>> = await apiFunction({
+    //       ...params,
+    //       pageToken: nextPageToken,
+    //     });
+    //     yield* response.data.items;
+    //     nextPageToken = response.data.nextPageToken;
+    //   } while (nextPageToken);
+    // }
 
     private async getData<T extends ApiType>(
       params: ApiParameter<T>,
