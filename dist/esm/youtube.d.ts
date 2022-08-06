@@ -133,18 +133,10 @@ export declare namespace Youtube {
     export class Api {
         #private;
         constructor(apiKey: string);
-        processPlaylistItem(playlistId: PlaylistId, callback: (data: PlaylistItemApiData) => void, part?: (keyof PlaylistItemApiData)[]): Promise<void>;
-        processPlaylistItemList(playlistId: PlaylistId, callback: (data: PlaylistItemApiData[]) => void, part?: (keyof PlaylistItemApiData)[]): Promise<void>;
-        getPlaylistItemList(playlistId: PlaylistId, part?: (keyof PlaylistItemApiData)[]): Promise<youtube_v3.Schema$PlaylistItem[]>;
-        processPlaylist(channelId: ChannelId, callback: (data: PlaylistApiData) => void, part?: (keyof PlaylistApiData)[]): Promise<void>;
-        processPlaylistList(channelId: ChannelId, callback: (data: PlaylistApiData[]) => void, part?: (keyof PlaylistApiData)[]): Promise<void>;
-        getPlaylistList(channelId: ChannelId, part?: (keyof PlaylistApiData)[]): Promise<youtube_v3.Schema$Playlist[]>;
-        processVideo(videoIdList: VideoId[], callback: (data: VideoApiData) => void, part?: (keyof VideoApiData)[]): Promise<void>;
-        processVideoList(videoIdList: VideoId[], callback: (data: VideoApiData[]) => void, part?: (keyof VideoApiData)[]): Promise<void>;
-        getVideoList(videoIdList: VideoId[], part?: (keyof VideoApiData)[]): Promise<youtube_v3.Schema$Video[]>;
-        processChannel(channelIdList: ChannelId[], callback: (data: ChannelApiData) => void, part?: (keyof ChannelApiData)[]): Promise<void>;
-        processChannelList(channelIdList: ChannelId[], callback: (data: ChannelApiData[]) => void, part?: (keyof ChannelApiData)[]): Promise<void>;
-        getChannelList(channelIdList: ChannelId[], part?: (keyof ChannelApiData)[]): Promise<youtube_v3.Schema$Channel[]>;
+        processPlaylistItemList(playlistId: PlaylistId, callback: (dataList: PlaylistItemApiData[]) => void, part?: (keyof PlaylistItemApiData)[]): Promise<void>;
+        processPlaylistList(channelId: ChannelId, callback: (dataList: PlaylistApiData[]) => void, part?: (keyof PlaylistApiData)[]): Promise<void>;
+        processVideoList(videoIdList: VideoId[], callback: (dataList: VideoApiData[]) => void, part?: (keyof VideoApiData)[]): Promise<void>;
+        processChannelList(channelIdList: ChannelId[], callback: (dataList: ChannelApiData[]) => void, part?: (keyof ChannelApiData)[]): Promise<void>;
     }
     export {};
 }

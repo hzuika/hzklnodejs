@@ -1,7 +1,6 @@
 import { youtube_v3, youtube } from "@googleapis/youtube";
 const client = youtube("v3");
-import { GaxiosPromise } from "gaxios";
-import { GaxiosResponse } from "gaxios";
+import { GaxiosPromise, GaxiosResponse } from "gaxios";
 import { Opaque } from "type-fest";
 import { getChunkFromArray, removeDuplicatesFromArray, replaceString } from ".";
 export namespace Youtube {
@@ -132,11 +131,8 @@ export namespace Youtube {
       : string;
 
   export type VideoApiData = youtube_v3.Schema$Video;
-
   export type ChannelApiData = youtube_v3.Schema$Channel;
-
   export type PlaylistApiData = youtube_v3.Schema$Playlist;
-
   export type PlaylistItemApiData = youtube_v3.Schema$PlaylistItem;
 
   export type ApiType = "Video" | "Channel" | "Playlist" | "PlaylistItem";
@@ -313,11 +309,8 @@ export namespace Youtube {
   };
 
   type VideoApiParameter = youtube_v3.Params$Resource$Videos$List;
-
   type ChannelApiParameter = youtube_v3.Params$Resource$Channels$List;
-
   type PlaylistApiParameter = youtube_v3.Params$Resource$Playlists$List;
-
   type PlaylistItemApiParameter = youtube_v3.Params$Resource$Playlistitems$List;
 
   type ApiParameter<T extends ApiType> = T extends "Video"
@@ -381,79 +374,7 @@ export namespace Youtube {
       } while (nextPageToken);
     }
 
-    // Gen(apiData, ...)
-    // apiのreponse data単位のGenerator
-    async *#getDataAsyncGenerator<T extends ApiType>(
-      apiFunction: ApiFunction<T>,
-      params: ApiParameter<T>
-    ) {
-      for await (const data of this.#getDataListAsyncGenerator(
-        apiFunction,
-        params
-      )) {
-        yield* data;
-      }
-    }
-
-    // [Gen(apiData, ... 50), Gen(apiData, ... 50)]
-    // apiのresponse data単位のGeneratorの配列
-    // 使用先でmapを使う
-    #getDataAsyncGeneratorListFromIdList<
-      T extends Extract<ApiType, "Video" | "Channel">
-    >(idList: Id<T>[], apiFunction: ApiFunction<T>, params: ApiParameter<T>) {
-      return getChunkFromArray(idList, 50).map((idList50) => {
-        params.id = idList50;
-        return this.#getDataAsyncGenerator(apiFunction, params);
-      });
-    }
-
-    // [Gen([apiData, ... 50]), Gen([apiData, ... 50])]
-    // apiのresponse data配列単位のGeneratorの配列
-    #getDataListAsyncGeneratorListFromIdList<
-      T extends Extract<ApiType, "Video" | "Channel">
-    >(idList: Id<T>[], apiFunction: ApiFunction<T>, params: ApiParameter<T>) {
-      return getChunkFromArray(idList, 50).map((idList50) => {
-        params.id = idList50;
-        return this.#getDataListAsyncGenerator(apiFunction, params);
-      });
-    }
-
-    async #processFromAsyncGenerator<T>(
-      asyncGenerator: AsyncGenerator<T>,
-      callback: (data: T) => void
-    ) {
-      for await (const data of asyncGenerator) {
-        callback(data);
-      }
-    }
-
-    async #processFromAsyncGeneratorList<T>(
-      asyncGeneratorList: AsyncGenerator<T>[],
-      callback: (data: T) => void
-    ) {
-      await Promise.all(
-        asyncGeneratorList.map(async (asyncGenerator) => {
-          await this.#processFromAsyncGenerator(asyncGenerator, callback);
-        })
-      );
-    }
-
-    #getPlaylistItemAsyncGenerator(
-      playlistId: PlaylistId,
-      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
-    ) {
-      const params = {
-        auth: this.#apiKey,
-        part: part,
-        playlistId: playlistId,
-        maxResults: 50,
-      };
-      return this.#getDataAsyncGenerator(
-        PlaylistItemApiData.apiFunction,
-        params
-      );
-    }
-
+    // PlaylistItem API の Generator
     #getPlaylistItemListAsyncGenerator(
       playlistId: PlaylistId,
       part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
@@ -470,54 +391,7 @@ export namespace Youtube {
       );
     }
 
-    async processPlaylistItem(
-      playlistId: PlaylistId,
-      callback: (data: PlaylistItemApiData) => void,
-      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
-    ) {
-      return this.#processFromAsyncGenerator(
-        this.#getPlaylistItemAsyncGenerator(playlistId, part),
-        callback
-      );
-    }
-
-    async processPlaylistItemList(
-      playlistId: PlaylistId,
-      callback: (data: PlaylistItemApiData[]) => void,
-      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
-    ) {
-      return this.#processFromAsyncGenerator(
-        this.#getPlaylistItemListAsyncGenerator(playlistId, part),
-        callback
-      );
-    }
-
-    async getPlaylistItemList(
-      playlistId: PlaylistId,
-      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
-    ) {
-      const dataList: PlaylistItemApiData[] = [];
-      await this.processPlaylistItem(
-        playlistId,
-        (data) => dataList.push(data),
-        part
-      );
-      return dataList;
-    }
-
-    #getPlaylistAsyncGenerator(
-      channelId: ChannelId,
-      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
-    ) {
-      const params = {
-        auth: this.#apiKey,
-        part: part,
-        channelId: channelId,
-        maxResults: 50,
-      };
-      return this.#getDataAsyncGenerator(PlaylistApiData.apiFunction, params);
-    }
-
+    // Playlist API の Generator
     #getPlaylistListAsyncGenerator(
       channelId: ChannelId,
       part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
@@ -534,79 +408,17 @@ export namespace Youtube {
       );
     }
 
-    async processPlaylist(
-      channelId: ChannelId,
-      callback: (data: PlaylistApiData) => void,
-      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
-    ) {
-      return this.#processFromAsyncGenerator(
-        this.#getPlaylistAsyncGenerator(channelId, part),
-        callback
-      );
+    // ID List を 50個ずつに分割して，Generatorの配列を返す
+    #getDataListAsyncGeneratorListFromIdList<
+      T extends Extract<ApiType, "Video" | "Channel">
+    >(idList: Id<T>[], apiFunction: ApiFunction<T>, params: ApiParameter<T>) {
+      return getChunkFromArray(idList, 50).map((idList50) => {
+        params.id = idList50;
+        return this.#getDataListAsyncGenerator(apiFunction, params);
+      });
     }
 
-    async processPlaylistList(
-      channelId: ChannelId,
-      callback: (data: PlaylistApiData[]) => void,
-      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
-    ) {
-      return this.#processFromAsyncGenerator(
-        this.#getPlaylistListAsyncGenerator(channelId, part),
-        callback
-      );
-    }
-
-    async getPlaylistList(
-      channelId: ChannelId,
-      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
-    ) {
-      const dataList: PlaylistApiData[] = [];
-      await this.processPlaylist(
-        channelId,
-        (data) => dataList.push(data),
-        part
-      );
-      return dataList;
-    }
-
-    async processVideo(
-      videoIdList: VideoId[],
-      callback: (data: VideoApiData) => void,
-      part: (keyof VideoApiData)[] = VideoApiData.partList
-    ) {
-      return this.#processFromAsyncGeneratorList(
-        this.#getVideoAsyncGeneratorList(videoIdList, part),
-        callback
-      );
-    }
-
-    async processVideoList(
-      videoIdList: VideoId[],
-      callback: (data: VideoApiData[]) => void,
-      part: (keyof VideoApiData)[] = VideoApiData.partList
-    ) {
-      return this.#processFromAsyncGeneratorList(
-        this.#getVideoListAsyncGeneratorList(videoIdList, part),
-        callback
-      );
-    }
-
-    #getVideoAsyncGeneratorList(
-      videoIdList: VideoId[],
-      part: (keyof VideoApiData)[] = VideoApiData.partList
-    ) {
-      const params: VideoApiParameter = {
-        auth: this.#apiKey,
-        part: part,
-        maxResults: 50,
-      };
-      return this.#getDataAsyncGeneratorListFromIdList(
-        videoIdList,
-        VideoApiData.apiFunction,
-        params
-      );
-    }
-
+    // Video API の Generator
     #getVideoListAsyncGeneratorList(
       videoIdList: VideoId[],
       part: (keyof VideoApiData)[] = VideoApiData.partList
@@ -623,53 +435,7 @@ export namespace Youtube {
       );
     }
 
-    async getVideoList(
-      videoIdList: VideoId[],
-      part: (keyof VideoApiData)[] = VideoApiData.partList
-    ) {
-      const dataList: VideoApiData[] = [];
-      await this.processVideo(videoIdList, (data) => dataList.push(data), part);
-      return dataList;
-    }
-
-    async processChannel(
-      channelIdList: ChannelId[],
-      callback: (data: ChannelApiData) => void,
-      part: (keyof ChannelApiData)[] = ChannelApiData.partList
-    ) {
-      this.#processFromAsyncGeneratorList(
-        this.#getChannelAsyncGeneratorList(channelIdList, part),
-        callback
-      );
-    }
-
-    async processChannelList(
-      channelIdList: ChannelId[],
-      callback: (data: ChannelApiData[]) => void,
-      part: (keyof ChannelApiData)[] = ChannelApiData.partList
-    ) {
-      this.#processFromAsyncGeneratorList(
-        this.#getChannelListAsyncGeneratorList(channelIdList, part),
-        callback
-      );
-    }
-
-    #getChannelAsyncGeneratorList(
-      channelIdList: ChannelId[],
-      part: (keyof ChannelApiData)[] = ChannelApiData.partList
-    ) {
-      const params = {
-        auth: this.#apiKey,
-        part: part,
-        maxResults: 50,
-      };
-      return this.#getDataAsyncGeneratorListFromIdList(
-        channelIdList,
-        ChannelApiData.apiFunction,
-        params
-      );
-    }
-
+    // Channel API の Generator
     #getChannelListAsyncGeneratorList(
       channelIdList: ChannelId[],
       part: (keyof ChannelApiData)[] = ChannelApiData.partList
@@ -686,17 +452,74 @@ export namespace Youtube {
       );
     }
 
-    async getChannelList(
+    // Generator の for await 内で callback を実行する
+    async #processFromAsyncGenerator<T>(
+      asyncGenerator: AsyncGenerator<T>,
+      callback: (data: T) => void
+    ) {
+      for await (const data of asyncGenerator) {
+        callback(data);
+      }
+    }
+
+    // PlaylistItem API Data に対して処理を行う
+    async processPlaylistItemList(
+      playlistId: PlaylistId,
+      callback: (dataList: PlaylistItemApiData[]) => void,
+      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
+    ) {
+      return this.#processFromAsyncGenerator(
+        this.#getPlaylistItemListAsyncGenerator(playlistId, part),
+        callback
+      );
+    }
+
+    // Playlist API Data に対して処理を行う
+    async processPlaylistList(
+      channelId: ChannelId,
+      callback: (dataList: PlaylistApiData[]) => void,
+      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
+    ) {
+      return this.#processFromAsyncGenerator(
+        this.#getPlaylistListAsyncGenerator(channelId, part),
+        callback
+      );
+    }
+
+    // Generator の配列の各 for await 内で callback を実行する
+    async #processFromAsyncGeneratorList<T>(
+      asyncGeneratorList: AsyncGenerator<T>[],
+      callback: (data: T) => void
+    ) {
+      Promise.all(
+        asyncGeneratorList.map((asyncGenerator) => {
+          this.#processFromAsyncGenerator(asyncGenerator, callback);
+        })
+      );
+    }
+
+    // Video API Data に対して処理を行う
+    async processVideoList(
+      videoIdList: VideoId[],
+      callback: (dataList: VideoApiData[]) => void,
+      part: (keyof VideoApiData)[] = VideoApiData.partList
+    ) {
+      return this.#processFromAsyncGeneratorList(
+        this.#getVideoListAsyncGeneratorList(videoIdList, part),
+        callback
+      );
+    }
+
+    // Channel API Data に対して処理を行う
+    async processChannelList(
       channelIdList: ChannelId[],
+      callback: (dataList: ChannelApiData[]) => void,
       part: (keyof ChannelApiData)[] = ChannelApiData.partList
     ) {
-      const dataList: ChannelApiData[] = [];
-      await this.processChannel(
-        channelIdList,
-        (data) => dataList.push(data),
-        part
+      this.#processFromAsyncGeneratorList(
+        this.#getChannelListAsyncGeneratorList(channelIdList, part),
+        callback
       );
-      return dataList;
     }
   }
 }
