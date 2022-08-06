@@ -368,9 +368,8 @@ export namespace Youtube {
       this.#apiKey = apiKey;
     }
 
-    // Gen([apiData, ... 50], [apiData, ... 50], ...)
-    // apiのresponse data配列単位のGenerator
-    async *#getDataListAsyncGenerator<T extends ApiType>(
+    // pageInfo.totalResults の情報が欲しいのでApiResponse<T>を返す
+    async *#getResponseAsyncGenerator<T extends ApiType>(
       apiFunction: ApiFunction<T>,
       params: ApiParameter<T>
     ) {
@@ -380,9 +379,51 @@ export namespace Youtube {
           ...params,
           pageToken: nextPageToken,
         });
-        yield ApiResponse.getDataList(response.data);
+        yield response.data;
         nextPageToken = response.data.nextPageToken;
       } while (nextPageToken);
+    }
+
+    // 取得数が変動するため，break可能なfor awaitを外で使用できるようにする．
+    getPlaylistItemResponseAsyncGenerator(playlistId: PlaylistId) {
+      const params: PlaylistItemApiParameter = {
+        playlistId: playlistId,
+        auth: this.#apiKey,
+        part: PlaylistItemApiData.partList,
+        maxResults: 50,
+      };
+      return this.#getResponseAsyncGenerator(
+        PlaylistItemApiData.apiFunction,
+        params
+      );
+    }
+
+    // 取得数が変動するため，break可能なfor awaitを外で使用できるようにする．
+    getPlaylistResponseAsyncGenerator(channelId: ChannelId) {
+      const params: PlaylistApiParameter = {
+        channelId: channelId,
+        auth: this.#apiKey,
+        part: PlaylistItemApiData.partList,
+        maxResults: 50,
+      };
+      return this.#getResponseAsyncGenerator(
+        PlaylistApiData.apiFunction,
+        params
+      );
+    }
+
+    // Gen([apiData, ... 50], [apiData, ... 50], ...)
+    // apiのresponse data配列単位のGenerator
+    async *#getDataListAsyncGenerator<T extends ApiType>(
+      apiFunction: ApiFunction<T>,
+      params: ApiParameter<T>
+    ) {
+      for await (const response of this.#getResponseAsyncGenerator(
+        apiFunction,
+        params
+      )) {
+        yield ApiResponse.getDataList(response);
+      }
     }
 
     // PlaylistItem API の Generator

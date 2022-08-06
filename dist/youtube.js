@@ -202,18 +202,44 @@ var Youtube;
         constructor(apiKey) {
             this.#apiKey = apiKey;
         }
-        // Gen([apiData, ... 50], [apiData, ... 50], ...)
-        // apiのresponse data配列単位のGenerator
-        async *#getDataListAsyncGenerator(apiFunction, params) {
+        // pageInfo.totalResults の情報が欲しいのでApiResponse<T>を返す
+        async *#getResponseAsyncGenerator(apiFunction, params) {
             let nextPageToken = params.pageToken;
             do {
                 const response = await apiFunction({
                     ...params,
                     pageToken: nextPageToken,
                 });
-                yield ApiResponse.getDataList(response.data);
+                yield response.data;
                 nextPageToken = response.data.nextPageToken;
             } while (nextPageToken);
+        }
+        // 取得数が変動するため，break可能なfor awaitを外で使用できるようにする．
+        getPlaylistItemResponseAsyncGenerator(playlistId) {
+            const params = {
+                playlistId: playlistId,
+                auth: this.#apiKey,
+                part: Youtube.PlaylistItemApiData.partList,
+                maxResults: 50,
+            };
+            return this.#getResponseAsyncGenerator(Youtube.PlaylistItemApiData.apiFunction, params);
+        }
+        // 取得数が変動するため，break可能なfor awaitを外で使用できるようにする．
+        getPlaylistResponseAsyncGenerator(channelId) {
+            const params = {
+                channelId: channelId,
+                auth: this.#apiKey,
+                part: Youtube.PlaylistItemApiData.partList,
+                maxResults: 50,
+            };
+            return this.#getResponseAsyncGenerator(Youtube.PlaylistApiData.apiFunction, params);
+        }
+        // Gen([apiData, ... 50], [apiData, ... 50], ...)
+        // apiのresponse data配列単位のGenerator
+        async *#getDataListAsyncGenerator(apiFunction, params) {
+            for await (const response of this.#getResponseAsyncGenerator(apiFunction, params)) {
+                yield ApiResponse.getDataList(response);
+            }
         }
         // PlaylistItem API の Generator
         #getPlaylistItemListAsyncGenerator(playlistId, part = Youtube.PlaylistItemApiData.partList) {

@@ -134,6 +134,8 @@ export declare namespace Youtube {
     export class Api {
         #private;
         constructor(apiKey: string);
+        getPlaylistItemResponseAsyncGenerator(playlistId: PlaylistId): AsyncGenerator<youtube_v3.Schema$PlaylistItemListResponse, void, unknown>;
+        getPlaylistResponseAsyncGenerator(channelId: ChannelId): AsyncGenerator<youtube_v3.Schema$PlaylistListResponse, void, unknown>;
         processPlaylistItemList(playlistId: PlaylistId, callback: (dataList: PlaylistItemApiData[]) => void, part?: (keyof PlaylistItemApiData)[]): Promise<void>;
         processPlaylistList(channelId: ChannelId, callback: (dataList: PlaylistApiData[]) => void, part?: (keyof PlaylistApiData)[]): Promise<void>;
         processVideoList(videoIdList: VideoId[], callback: (dataList: VideoApiData[]) => void, part?: (keyof VideoApiData)[]): Promise<void>;
