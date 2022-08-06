@@ -6,12 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Notion = exports.Youtube = exports.YoutubeLegacy = exports.sortJson = exports.sleep = exports.equalArray = exports.getJapaneseIsoStringFromUtcIsoString = exports.removeDuplicatesFromArray = exports.replaceString = exports.getTsvFromJson = exports.getCsvFromJson = exports.getChunkFromArray = exports.getHtmlFromUrl = exports.getJsonFromString = exports.getStringFromJson = exports.getFileNameWithoutExtension = exports.getFileName = exports.getExtension = exports.getDirectoryName = exports.writeFileJson = exports.writeFileBinary = exports.writeFileText = exports.readFileJson = exports.readFileBinary = exports.readFileText = exports.makeDirectory = exports.existPath = void 0;
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
-const googleapis_1 = require("googleapis");
-const youtube = googleapis_1.google.youtube("v3");
+const youtube_1 = require("@googleapis/youtube");
+const youtubeClient = (0, youtube_1.youtube)("v3");
 const axios_1 = __importDefault(require("axios"));
 const client_1 = require("@notionhq/client");
-const youtube_1 = require("./youtube");
-Object.defineProperty(exports, "Youtube", { enumerable: true, get: function () { return youtube_1.Youtube; } });
+const youtube_2 = require("./youtube");
+Object.defineProperty(exports, "Youtube", { enumerable: true, get: function () { return youtube_2.Youtube; } });
 const existPath = async (filepath) => {
     try {
         await fs_1.promises.access(filepath);
@@ -336,7 +336,7 @@ class YoutubeLegacy {
             videoId: videoId,
             maxResults: 100,
         };
-        return this.#getApiData(params, (p) => youtube.commentThreads.list(p));
+        return this.#getApiData(params, (p) => youtubeClient.commentThreads.list(p));
     }
     async getVideos(videoIdList, part = [
         "id",
@@ -354,7 +354,7 @@ class YoutubeLegacy {
             part: part,
             maxResults: 50,
         };
-        return this.#getApiDataFromIdList(videoIdList, params, (p) => youtube.videos.list(p));
+        return this.#getApiDataFromIdList(videoIdList, params, (p) => youtubeClient.videos.list(p));
     }
     async getChannels(channelIdList, part = [
         "brandingSettings",
@@ -372,7 +372,7 @@ class YoutubeLegacy {
             part: part,
             maxResults: 50,
         };
-        return this.#getApiDataFromIdList(channelIdList, params, (p) => youtube.channels.list(p));
+        return this.#getApiDataFromIdList(channelIdList, params, (p) => youtubeClient.channels.list(p));
     }
     async getPlaylistItems(playlistId, part = ["snippet", "contentDetails", "id", "status"]) {
         const params = {
@@ -381,7 +381,7 @@ class YoutubeLegacy {
             playlistId: playlistId,
             maxResults: 50,
         };
-        return this.#getApiData(params, (p) => youtube.playlistItems.list(p));
+        return this.#getApiData(params, (p) => youtubeClient.playlistItems.list(p));
     }
     async getPlaylists(channelId, part = [
         "snippet",
@@ -397,7 +397,7 @@ class YoutubeLegacy {
             channelId: channelId,
             maxResults: 50,
         };
-        return this.#getApiData(params, (params) => youtube.playlists.list(params));
+        return this.#getApiData(params, (params) => youtubeClient.playlists.list(params));
     }
     // Video API Data
     static getChannelIdFromVideoApiData(videoApiData) {

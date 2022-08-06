@@ -1,5 +1,5 @@
-import { google, youtube_v3 } from "googleapis";
-const youtube = google.youtube("v3");
+import { youtube_v3, youtube } from "@googleapis/youtube";
+const client = youtube("v3");
 import { GaxiosPromise } from "gaxios";
 import { GaxiosResponse } from "gaxios";
 import { Opaque } from "type-fest";
@@ -90,6 +90,11 @@ export namespace Youtube {
     },
   };
 
+  export type PlaylistItemId = Opaque<string, "PlaylistItemId">;
+  export const PlaylistItemId = {
+    validLength: 48,
+  };
+
   export type RegularPlaylistId = Opaque<string, "RegularPlaylistId">;
   export const RegularPlaylistId = {
     validLength: 34,
@@ -145,28 +150,166 @@ export namespace Youtube {
     ? PlaylistItemApiData
     : unknown;
 
-  export const VideoApiData = {
-    getId: (data: VideoApiData) => {
-      return data.id;
-    },
+  type ApiDataExtractFunction<T extends ApiType, U = string> = (
+    data: ApiData<T>
+  ) => U | null | undefined;
+
+  export const VideoApiData: {
+    partList: (keyof ApiData<"Video">)[];
+    apiFunction: ApiFunction<"Video">;
+    getId: ApiDataExtractFunction<"Video">;
+    getPublishedAt: ApiDataExtractFunction<"Video">;
+    getChannelId: ApiDataExtractFunction<"Video">;
+    getTitle: ApiDataExtractFunction<"Video">;
+    getDescription: ApiDataExtractFunction<"Video">;
+    getThumbnail: ApiDataExtractFunction<"Video">;
+    getChannelTitle: ApiDataExtractFunction<"Video">;
+    getTagList: ApiDataExtractFunction<"Video", string[]>;
+    getCategoryId: ApiDataExtractFunction<"Video">;
+    getIsLive: ApiDataExtractFunction<"Video">;
+    getDuration: ApiDataExtractFunction<"Video">;
+    getHasCaption: ApiDataExtractFunction<"Video">;
+    getViewCount: ApiDataExtractFunction<"Video">;
+    getLikeCount: ApiDataExtractFunction<"Video">;
+    getCommentCount: ApiDataExtractFunction<"Video">;
+    getTopicIdList: ApiDataExtractFunction<"Video", string[]>;
+    getTopicCategoryList: ApiDataExtractFunction<"Video", string[]>;
+    getStartTime: ApiDataExtractFunction<"Video">;
+    getEndTime: ApiDataExtractFunction<"Video">;
+  } = {
+    partList: [
+      "id",
+      "snippet",
+      "contentDetails",
+      "status",
+      "statistics",
+      "player",
+      "topicDetails",
+      "recordingDetails",
+      "liveStreamingDetails",
+      "localizations",
+    ],
+
+    apiFunction: (params) => client.videos.list(params),
+    getId: (data) => data.id,
+    getTitle: (data) => data.snippet?.title,
+    getDescription: (data) => data.snippet?.description,
+    getChannelId: (data) => data.snippet?.channelId,
+    getChannelTitle: (data) => data.snippet?.channelTitle,
+    getPublishedAt: (data) => data.snippet?.publishedAt,
+    getThumbnail: (data) => data.snippet?.thumbnails?.high?.url,
+    getStartTime: (data) => data.liveStreamingDetails?.actualStartTime,
+    getEndTime: (data) => data.liveStreamingDetails?.actualEndTime,
+    getDuration: (data) => data.contentDetails?.duration,
+    getViewCount: (data) => data.statistics?.viewCount,
+    getLikeCount: (data) => data.statistics?.likeCount,
+    getCommentCount: (data) => data.statistics?.commentCount,
+    getCategoryId: (data) => data.snippet?.categoryId,
+    getTagList: (data) => data.snippet?.tags,
+    getIsLive: (data) => data.snippet?.liveBroadcastContent,
+    getHasCaption: (data) => data.contentDetails?.caption,
+    getTopicIdList: (data) => data.topicDetails?.topicIds,
+    getTopicCategoryList: (data) => data.topicDetails?.topicCategories,
   };
 
-  export const ChannelApiData = {
-    getId: (data: ChannelApiData) => {
-      return data.id;
-    },
+  export const ChannelApiData: {
+    partList: (keyof ChannelApiData)[];
+    apiFunction: ApiFunction<"Channel">;
+    getId: ApiDataExtractFunction<"Channel">;
+    getTitle: ApiDataExtractFunction<"Channel">;
+    getDescription: ApiDataExtractFunction<"Channel">;
+    getCustomUrl: ApiDataExtractFunction<"Channel">;
+    getPublishedAt: ApiDataExtractFunction<"Channel">;
+    getThumbnail: ApiDataExtractFunction<"Channel">;
+    getViewCount: ApiDataExtractFunction<"Channel">;
+    getSubscriberCount: ApiDataExtractFunction<"Channel">;
+    getVideoCount: ApiDataExtractFunction<"Channel">;
+    getBanner: ApiDataExtractFunction<"Channel">;
+  } = {
+    partList: [
+      "id",
+      "snippet",
+      "contentDetails",
+      "statistics",
+      "topicDetails",
+      "status",
+      "brandingSettings",
+      "contentOwnerDetails",
+      "localizations",
+    ],
+
+    apiFunction: (params) => client.channels.list(params),
+    getId: (data) => data.id,
+    getTitle: (data) => data.snippet?.title,
+    getDescription: (data) => data.snippet?.description,
+    getCustomUrl: (data) => data.snippet?.customUrl,
+    getPublishedAt: (data) => data.snippet?.publishedAt,
+    getThumbnail: (data) => data.snippet?.thumbnails?.high?.url,
+    getViewCount: (data) => data.statistics?.viewCount,
+    getSubscriberCount: (data) => data.statistics?.subscriberCount,
+    getVideoCount: (data) => data.statistics?.videoCount,
+    getBanner: (data) => data.brandingSettings?.image?.bannerExternalUrl,
   };
 
-  export const PlaylistApiData = {
-    getId: (data: PlaylistApiData) => {
-      return data.id;
-    },
+  export const PlaylistApiData: {
+    partList: (keyof PlaylistApiData)[];
+    apiFunction: ApiFunction<"Playlist">;
+    getId: ApiDataExtractFunction<"Playlist">;
+    getPublishedAt: ApiDataExtractFunction<"Playlist">;
+    getChannelId: ApiDataExtractFunction<"Playlist">;
+    getTitle: ApiDataExtractFunction<"Playlist">;
+    getDescription: ApiDataExtractFunction<"Playlist">;
+    getChannelTitle: ApiDataExtractFunction<"Playlist">;
+    getVideoCount: ApiDataExtractFunction<"Playlist", number>;
+  } = {
+    partList: [
+      "id",
+      "snippet",
+      "status",
+      "contentDetails",
+      "player",
+      "localizations",
+    ],
+    apiFunction: (params) => client.playlists.list(params),
+    getId: (data) => data.id,
+    getPublishedAt: (data) => data.snippet?.publishedAt,
+    getChannelId: (data) => data.snippet?.channelId,
+    getTitle: (data) => data.snippet?.title,
+    getDescription: (data) => data.snippet?.description,
+    getChannelTitle: (data) => data.snippet?.channelTitle,
+    getVideoCount: (data) => data.contentDetails?.itemCount,
   };
 
-  export const PlaylistItemApiData = {
-    getId: (data: PlaylistItemApiData) => {
-      return data.id;
-    },
+  export const PlaylistItemApiData: {
+    partList: (keyof PlaylistItemApiData)[];
+    apiFunction: ApiFunction<"PlaylistItem">;
+    getId: ApiDataExtractFunction<"PlaylistItem">;
+    getVideoId: ApiDataExtractFunction<"PlaylistItem">;
+    getVideoChannelId: ApiDataExtractFunction<"PlaylistItem">;
+    getVideoChannelTitle: ApiDataExtractFunction<"PlaylistItem">;
+    getVideoPublishedAt: ApiDataExtractFunction<"PlaylistItem">;
+    getTitle: ApiDataExtractFunction<"PlaylistItem">;
+    getDescription: ApiDataExtractFunction<"PlaylistItem">;
+    getThumbnail: ApiDataExtractFunction<"PlaylistItem">;
+    getChannelId: ApiDataExtractFunction<"PlaylistItem">;
+    getChannelTitle: ApiDataExtractFunction<"PlaylistItem">;
+    getPublishedAt: ApiDataExtractFunction<"PlaylistItem">;
+    getPlaylistId: ApiDataExtractFunction<"PlaylistItem">;
+  } = {
+    partList: ["id", "snippet", "contentDetails", "status"],
+    apiFunction: (params) => client.playlistItems.list(params),
+    getId: (data) => data.id,
+    getVideoId: (data) => data.contentDetails?.videoId,
+    getVideoChannelId: (data) => data.snippet?.videoOwnerChannelId,
+    getVideoChannelTitle: (data) => data.snippet?.videoOwnerChannelTitle,
+    getVideoPublishedAt: (data) => data.contentDetails?.endAt,
+    getTitle: (data) => data.snippet?.title,
+    getDescription: (data) => data.snippet?.description,
+    getThumbnail: (data) => data.snippet?.thumbnails?.high?.url,
+    getChannelId: (data) => data.snippet?.channelId,
+    getChannelTitle: (data) => data.snippet?.channelTitle,
+    getPublishedAt: (data) => data.snippet?.publishedAt,
+    getPlaylistId: (data) => data.snippet?.playlistId,
   };
 
   type VideoApiParameter = youtube_v3.Params$Resource$Videos$List;
@@ -202,200 +345,358 @@ export namespace Youtube {
     ? PlaylistItemApiResponse
     : unknown;
 
-  type VideoApiFunction = (
-    p: VideoApiParameter
-  ) => GaxiosPromise<VideoApiResponse>;
-
-  type ChannelApiFunction = (
-    p: ChannelApiParameter
-  ) => GaxiosPromise<ChannelApiResponse>;
-
-  type PlaylistApiFunction = (
-    p: PlaylistApiParameter
-  ) => GaxiosPromise<PlaylistApiResponse>;
-
-  type PlaylistItemApiFunction = (
-    p: PlaylistItemApiParameter
-  ) => GaxiosPromise<PlaylistItemApiResponse>;
+  const ApiResponse = {
+    // ApiResponse<T>["items"]型がApiData<T>[]であることを認識させる．
+    getDataList: <T extends ApiType>(
+      response: ApiResponse<T>
+    ): ApiData<T>[] => {
+      return response.items ? (response.items as ApiData<T>[]) : [];
+    },
+  };
 
   type ApiFunction<T extends ApiType> = (
     params: ApiParameter<T>
   ) => GaxiosPromise<ApiResponse<T>>;
 
   export class Api {
-    private readonly apiKey: string;
+    readonly #apiKey: string;
     constructor(apiKey: string) {
-      this.apiKey = apiKey;
+      this.#apiKey = apiKey;
     }
 
-    private async *iterateVideo(
-      apiFunction: ApiFunction<"Video">,
-      params: ApiParameter<"Video">
-    ): AsyncIterableIterator<ApiData<"Video">> {
+    // Gen([apiData, ... 50], [apiData, ... 50], ...)
+    // apiのresponse data配列単位のGenerator
+    async *#getDataListAsyncGenerator<T extends ApiType>(
+      apiFunction: ApiFunction<T>,
+      params: ApiParameter<T>
+    ) {
       let nextPageToken: string | null | undefined = params.pageToken;
       do {
-        const response: GaxiosResponse<ApiResponse<"Video">> =
-          await apiFunction({
-            ...params,
-            pageToken: nextPageToken,
-          });
-        yield* response.data.items ? response.data.items : [];
+        const response: GaxiosResponse<ApiResponse<T>> = await apiFunction({
+          ...params,
+          pageToken: nextPageToken,
+        });
+        yield ApiResponse.getDataList(response.data);
         nextPageToken = response.data.nextPageToken;
       } while (nextPageToken);
     }
 
-    async getVideoData(
-      params: ApiParameter<"Video">,
-      apiFunction: ApiFunction<"Video">
-    ): Promise<youtube_v3.Schema$Video[]> {
-      const dataList: ApiData<"Video">[] = [];
-      for await (const data of this.iterateVideo(apiFunction, params)) {
-        dataList.push(data);
+    // Gen(apiData, ...)
+    // apiのreponse data単位のGenerator
+    async *#getDataAsyncGenerator<T extends ApiType>(
+      apiFunction: ApiFunction<T>,
+      params: ApiParameter<T>
+    ) {
+      for await (const data of this.#getDataListAsyncGenerator(
+        apiFunction,
+        params
+      )) {
+        yield* data;
       }
-      return dataList;
     }
 
-    // private async *iterateData<T extends ApiType>(
-    //   apiFunction: ApiFunction<T>,
-    //   params: ApiParameter<T>
-    // ): AsyncIterableIterator<ApiData<T>> {
-    //   let nextPageToken: string | null | undefined = params.pageToken;
-    //   do {
-    //     const response: GaxiosResponse<ApiResponse<T>> = await apiFunction({
-    //       ...params,
-    //       pageToken: nextPageToken,
-    //     });
-    //     const data: ApiResponse<T> = response.data;
-    //     const items: ApiData<T>[] = data.items ? data.items : [];
-    //     yield* items;
-    //     nextPageToken = response.data.nextPageToken;
-    //   } while (nextPageToken);
-    // }
-
-    private async getData<T extends ApiType>(
-      params: ApiParameter<T>,
-      apiFunction: ApiFunction<T>
-    ): Promise<ApiData<T>[]> {
-      const dataList: ApiData<T>[] = [];
-      params.pageToken = undefined;
-      do {
-        const res = await apiFunction(params);
-        Array.prototype.push.apply(
-          dataList,
-          res.data.items ? res.data.items : []
-        );
-        params.pageToken = res.data.nextPageToken
-          ? res.data.nextPageToken
-          : undefined;
-      } while (params.pageToken);
-      return dataList;
-    }
-
-    private async getDataFromIdList<
+    // [Gen(apiData, ... 50), Gen(apiData, ... 50)]
+    // apiのresponse data単位のGeneratorの配列
+    // 使用先でmapを使う
+    #getDataAsyncGeneratorListFromIdList<
       T extends Extract<ApiType, "Video" | "Channel">
-    >(idList: Id<T>[], params: ApiParameter<T>, apiFunction: ApiFunction<T>) {
-      const youtubeApiData = await Promise.all(
-        getChunkFromArray(idList, 50).map((idList50) => {
-          params.id = idList50;
-          return this.getData<T>(params, apiFunction);
+    >(idList: Id<T>[], apiFunction: ApiFunction<T>, params: ApiParameter<T>) {
+      return getChunkFromArray(idList, 50).map((idList50) => {
+        params.id = idList50;
+        return this.#getDataAsyncGenerator(apiFunction, params);
+      });
+    }
+
+    // [Gen([apiData, ... 50]), Gen([apiData, ... 50])]
+    // apiのresponse data配列単位のGeneratorの配列
+    #getDataListAsyncGeneratorListFromIdList<
+      T extends Extract<ApiType, "Video" | "Channel">
+    >(idList: Id<T>[], apiFunction: ApiFunction<T>, params: ApiParameter<T>) {
+      return getChunkFromArray(idList, 50).map((idList50) => {
+        params.id = idList50;
+        return this.#getDataListAsyncGenerator(apiFunction, params);
+      });
+    }
+
+    async #processFromAsyncGenerator<T>(
+      asyncGenerator: AsyncGenerator<T>,
+      callback: (data: T) => void
+    ) {
+      for await (const data of asyncGenerator) {
+        callback(data);
+      }
+    }
+
+    async #processFromAsyncGeneratorList<T>(
+      asyncGeneratorList: AsyncGenerator<T>[],
+      callback: (data: T) => void
+    ) {
+      await Promise.all(
+        asyncGeneratorList.map(async (asyncGenerator) => {
+          await this.#processFromAsyncGenerator(asyncGenerator, callback);
         })
       );
-      return youtubeApiData.flat();
     }
 
-    async getVideos(
-      videoIdList: VideoId[],
-      part: (keyof VideoApiData)[] = [
-        "id",
-        "liveStreamingDetails",
-        "localizations",
-        "player",
-        "recordingDetails",
-        "snippet",
-        "statistics",
-        "status",
-        "topicDetails",
-      ]
+    #getPlaylistItemAsyncGenerator(
+      playlistId: PlaylistId,
+      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
     ) {
       const params = {
-        auth: this.apiKey,
-        part: part,
-        maxResults: 50,
-      };
-      return this.getDataFromIdList<"Video">(
-        videoIdList,
-        params,
-        (p: VideoApiParameter) => youtube.videos.list(p)
-      );
-    }
-
-    async getChannels(
-      channelIdList: ChannelId[],
-      part: (keyof ChannelApiData)[] = [
-        "brandingSettings",
-        "contentDetails",
-        "contentOwnerDetails",
-        "id",
-        "localizations",
-        "snippet",
-        "statistics",
-        "status",
-        "topicDetails",
-      ]
-    ) {
-      const params: ChannelApiParameter = {
-        auth: this.apiKey,
-        part: part,
-        maxResults: 50,
-      };
-      return this.getDataFromIdList<"Channel">(
-        channelIdList,
-        params,
-        (p: ChannelApiParameter) => youtube.channels.list(p)
-      );
-    }
-
-    async getPlaylistItems(
-      playlistId: PlaylistId,
-      part: (keyof PlaylistItemApiData)[] = [
-        "snippet",
-        "contentDetails",
-        "id",
-        "status",
-      ]
-    ) {
-      const params: PlaylistItemApiParameter = {
-        auth: this.apiKey,
+        auth: this.#apiKey,
         part: part,
         playlistId: playlistId,
         maxResults: 50,
       };
-      return this.getData<"PlaylistItem">(
-        params,
-        (p: PlaylistItemApiParameter) => youtube.playlistItems.list(p)
+      return this.#getDataAsyncGenerator(
+        PlaylistItemApiData.apiFunction,
+        params
       );
     }
 
-    async getPlaylists(
-      channelId: ChannelId,
-      part: (keyof PlaylistApiData)[] = [
-        "snippet",
-        "contentDetails",
-        "id",
-        "status",
-        "player",
-        "localizations",
-      ]
+    #getPlaylistItemListAsyncGenerator(
+      playlistId: PlaylistId,
+      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
     ) {
-      const params: PlaylistApiParameter = {
-        auth: this.apiKey,
+      const params = {
+        auth: this.#apiKey,
+        part: part,
+        playlistId: playlistId,
+        maxResults: 50,
+      };
+      return this.#getDataListAsyncGenerator(
+        PlaylistItemApiData.apiFunction,
+        params
+      );
+    }
+
+    async processPlaylistItem(
+      playlistId: PlaylistId,
+      callback: (data: PlaylistItemApiData) => void,
+      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
+    ) {
+      return this.#processFromAsyncGenerator(
+        this.#getPlaylistItemAsyncGenerator(playlistId, part),
+        callback
+      );
+    }
+
+    async processPlaylistItemList(
+      playlistId: PlaylistId,
+      callback: (data: PlaylistItemApiData[]) => void,
+      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
+    ) {
+      return this.#processFromAsyncGenerator(
+        this.#getPlaylistItemListAsyncGenerator(playlistId, part),
+        callback
+      );
+    }
+
+    async getPlaylistItemList(
+      playlistId: PlaylistId,
+      part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
+    ) {
+      const dataList: PlaylistItemApiData[] = [];
+      await this.processPlaylistItem(
+        playlistId,
+        (data) => dataList.push(data),
+        part
+      );
+      return dataList;
+    }
+
+    #getPlaylistAsyncGenerator(
+      channelId: ChannelId,
+      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
+    ) {
+      const params = {
+        auth: this.#apiKey,
         part: part,
         channelId: channelId,
         maxResults: 50,
       };
-      return this.getData<"Playlist">(params, (params: PlaylistApiParameter) =>
-        youtube.playlists.list(params)
+      return this.#getDataAsyncGenerator(PlaylistApiData.apiFunction, params);
+    }
+
+    #getPlaylistListAsyncGenerator(
+      channelId: ChannelId,
+      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
+    ) {
+      const params = {
+        auth: this.#apiKey,
+        part: part,
+        channelId: channelId,
+        maxResults: 50,
+      };
+      return this.#getDataListAsyncGenerator(
+        PlaylistApiData.apiFunction,
+        params
       );
+    }
+
+    async processPlaylist(
+      channelId: ChannelId,
+      callback: (data: PlaylistApiData) => void,
+      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
+    ) {
+      return this.#processFromAsyncGenerator(
+        this.#getPlaylistAsyncGenerator(channelId, part),
+        callback
+      );
+    }
+
+    async processPlaylistList(
+      channelId: ChannelId,
+      callback: (data: PlaylistApiData[]) => void,
+      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
+    ) {
+      return this.#processFromAsyncGenerator(
+        this.#getPlaylistListAsyncGenerator(channelId, part),
+        callback
+      );
+    }
+
+    async getPlaylistList(
+      channelId: ChannelId,
+      part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
+    ) {
+      const dataList: PlaylistApiData[] = [];
+      await this.processPlaylist(
+        channelId,
+        (data) => dataList.push(data),
+        part
+      );
+      return dataList;
+    }
+
+    async processVideo(
+      videoIdList: VideoId[],
+      callback: (data: VideoApiData) => void,
+      part: (keyof VideoApiData)[] = VideoApiData.partList
+    ) {
+      return this.#processFromAsyncGeneratorList(
+        this.#getVideoAsyncGeneratorList(videoIdList, part),
+        callback
+      );
+    }
+
+    async processVideoList(
+      videoIdList: VideoId[],
+      callback: (data: VideoApiData[]) => void,
+      part: (keyof VideoApiData)[] = VideoApiData.partList
+    ) {
+      return this.#processFromAsyncGeneratorList(
+        this.#getVideoListAsyncGeneratorList(videoIdList, part),
+        callback
+      );
+    }
+
+    #getVideoAsyncGeneratorList(
+      videoIdList: VideoId[],
+      part: (keyof VideoApiData)[] = VideoApiData.partList
+    ) {
+      const params: VideoApiParameter = {
+        auth: this.#apiKey,
+        part: part,
+        maxResults: 50,
+      };
+      return this.#getDataAsyncGeneratorListFromIdList(
+        videoIdList,
+        VideoApiData.apiFunction,
+        params
+      );
+    }
+
+    #getVideoListAsyncGeneratorList(
+      videoIdList: VideoId[],
+      part: (keyof VideoApiData)[] = VideoApiData.partList
+    ) {
+      const params: VideoApiParameter = {
+        auth: this.#apiKey,
+        part: part,
+        maxResults: 50,
+      };
+      return this.#getDataListAsyncGeneratorListFromIdList(
+        videoIdList,
+        VideoApiData.apiFunction,
+        params
+      );
+    }
+
+    async getVideoList(
+      videoIdList: VideoId[],
+      part: (keyof VideoApiData)[] = VideoApiData.partList
+    ) {
+      const dataList: VideoApiData[] = [];
+      await this.processVideo(videoIdList, (data) => dataList.push(data), part);
+      return dataList;
+    }
+
+    async processChannel(
+      channelIdList: ChannelId[],
+      callback: (data: ChannelApiData) => void,
+      part: (keyof ChannelApiData)[] = ChannelApiData.partList
+    ) {
+      this.#processFromAsyncGeneratorList(
+        this.#getChannelAsyncGeneratorList(channelIdList, part),
+        callback
+      );
+    }
+
+    async processChannelList(
+      channelIdList: ChannelId[],
+      callback: (data: ChannelApiData[]) => void,
+      part: (keyof ChannelApiData)[] = ChannelApiData.partList
+    ) {
+      this.#processFromAsyncGeneratorList(
+        this.#getChannelListAsyncGeneratorList(channelIdList, part),
+        callback
+      );
+    }
+
+    #getChannelAsyncGeneratorList(
+      channelIdList: ChannelId[],
+      part: (keyof ChannelApiData)[] = ChannelApiData.partList
+    ) {
+      const params = {
+        auth: this.#apiKey,
+        part: part,
+        maxResults: 50,
+      };
+      return this.#getDataAsyncGeneratorListFromIdList(
+        channelIdList,
+        ChannelApiData.apiFunction,
+        params
+      );
+    }
+
+    #getChannelListAsyncGeneratorList(
+      channelIdList: ChannelId[],
+      part: (keyof ChannelApiData)[] = ChannelApiData.partList
+    ) {
+      const params = {
+        auth: this.#apiKey,
+        part: part,
+        maxResults: 50,
+      };
+      return this.#getDataListAsyncGeneratorListFromIdList(
+        channelIdList,
+        ChannelApiData.apiFunction,
+        params
+      );
+    }
+
+    async getChannelList(
+      channelIdList: ChannelId[],
+      part: (keyof ChannelApiData)[] = ChannelApiData.partList
+    ) {
+      const dataList: ChannelApiData[] = [];
+      await this.processChannel(
+        channelIdList,
+        (data) => dataList.push(data),
+        part
+      );
+      return dataList;
     }
   }
 }

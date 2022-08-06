@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import Path from "path";
-import { google } from "googleapis";
-const youtube = google.youtube("v3");
+import { youtube } from "@googleapis/youtube";
+const youtubeClient = youtube("v3");
 import axios from "axios";
 import { Client } from "@notionhq/client";
 import { Youtube } from "./youtube";
@@ -305,7 +305,7 @@ class YoutubeLegacy {
             videoId: videoId,
             maxResults: 100,
         };
-        return this.#getApiData(params, (p) => youtube.commentThreads.list(p));
+        return this.#getApiData(params, (p) => youtubeClient.commentThreads.list(p));
     }
     async getVideos(videoIdList, part = [
         "id",
@@ -323,7 +323,7 @@ class YoutubeLegacy {
             part: part,
             maxResults: 50,
         };
-        return this.#getApiDataFromIdList(videoIdList, params, (p) => youtube.videos.list(p));
+        return this.#getApiDataFromIdList(videoIdList, params, (p) => youtubeClient.videos.list(p));
     }
     async getChannels(channelIdList, part = [
         "brandingSettings",
@@ -341,7 +341,7 @@ class YoutubeLegacy {
             part: part,
             maxResults: 50,
         };
-        return this.#getApiDataFromIdList(channelIdList, params, (p) => youtube.channels.list(p));
+        return this.#getApiDataFromIdList(channelIdList, params, (p) => youtubeClient.channels.list(p));
     }
     async getPlaylistItems(playlistId, part = ["snippet", "contentDetails", "id", "status"]) {
         const params = {
@@ -350,7 +350,7 @@ class YoutubeLegacy {
             playlistId: playlistId,
             maxResults: 50,
         };
-        return this.#getApiData(params, (p) => youtube.playlistItems.list(p));
+        return this.#getApiData(params, (p) => youtubeClient.playlistItems.list(p));
     }
     async getPlaylists(channelId, part = [
         "snippet",
@@ -366,7 +366,7 @@ class YoutubeLegacy {
             channelId: channelId,
             maxResults: 50,
         };
-        return this.#getApiData(params, (params) => youtube.playlists.list(params));
+        return this.#getApiData(params, (params) => youtubeClient.playlists.list(params));
     }
     // Video API Data
     static getChannelIdFromVideoApiData(videoApiData) {

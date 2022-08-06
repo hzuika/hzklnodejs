@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { youtube_v3 } from "googleapis";
+import { youtube_v3 } from "@googleapis/youtube";
 import { CreateDatabaseParameters, CreateDatabaseResponse, CreatePageParameters, CreatePageResponse, GetDatabaseParameters, GetDatabaseResponse, GetPageParameters, GetPageResponse, UpdateDatabaseResponse, UpdatePageParameters, UpdatePageResponse } from "@notionhq/client/build/src/api-endpoints";
 import { Youtube } from "./youtube";
 declare const existPath: (filepath: string) => Promise<boolean>;
@@ -38,7 +38,7 @@ declare class YoutubeLegacy {
     constructor(apiKey: string);
     getCommentThreads(videoId: string, part?: string[]): Promise<YoutubeApiData[]>;
     getVideos(videoIdList: string[], part?: string[]): Promise<YoutubeApiData[]>;
-    getChannels(channelIdList: string[], part?: string[]): Promise<youtube_v3.Schema$Channel[]>;
+    getChannels(channelIdList: string[], part?: string[]): Promise<YoutubeApiData[]>;
     getPlaylistItems(playlistId: string, part?: string[]): Promise<YoutubeApiData[]>;
     getPlaylists(channelId: string, part?: string[]): Promise<YoutubeApiData[]>;
     static getChannelIdFromVideoApiData(videoApiData: YoutubeVideoApiData): string | null | undefined;

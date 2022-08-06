@@ -1,10 +1,10 @@
 import { promises as fs } from "fs";
 import Path from "path";
-import { google, youtube_v3 } from "googleapis";
-const youtube = google.youtube("v3");
+import { youtube, youtube_v3 } from "@googleapis/youtube";
+const youtubeClient = youtube("v3");
 import axios from "axios";
 import { Client } from "@notionhq/client";
-import { GaxiosPromise } from "googleapis/build/src/apis/abusiveexperiencereport";
+import { GaxiosPromise } from "gaxios";
 import {
   CreateDatabaseParameters,
   CreateDatabaseResponse,
@@ -506,7 +506,7 @@ class YoutubeLegacy {
       maxResults: 100,
     };
     return this.#getApiData(params, (p: YoutubeCommentThreadApiParameter) =>
-      youtube.commentThreads.list(p)
+      youtubeClient.commentThreads.list(p)
     );
   }
 
@@ -532,7 +532,7 @@ class YoutubeLegacy {
     return this.#getApiDataFromIdList(
       videoIdList,
       params,
-      (p: YoutubeVideoApiParameter) => youtube.videos.list(p)
+      (p: YoutubeVideoApiParameter) => youtubeClient.videos.list(p)
     );
   }
 
@@ -558,7 +558,7 @@ class YoutubeLegacy {
     return this.#getApiDataFromIdList(
       channelIdList,
       params,
-      (p: YoutubeChannelApiParameter) => youtube.channels.list(p)
+      (p: YoutubeChannelApiParameter) => youtubeClient.channels.list(p)
     );
   }
 
@@ -573,7 +573,7 @@ class YoutubeLegacy {
       maxResults: 50,
     };
     return this.#getApiData(params, (p: YoutubePlaylistItemApiParameter) =>
-      youtube.playlistItems.list(p)
+      youtubeClient.playlistItems.list(p)
     );
   }
 
@@ -595,7 +595,7 @@ class YoutubeLegacy {
       maxResults: 50,
     };
     return this.#getApiData(params, (params: YoutubePlaylistApiParameter) =>
-      youtube.playlists.list(params)
+      youtubeClient.playlists.list(params)
     );
   }
 
