@@ -43,6 +43,7 @@ export declare namespace Youtube {
     export type PlaylistId = UploadPlaylistId | RegularPlaylistId;
     export const PlaylistId: {
         urlPrefix: string;
+        new: (id: string) => PlaylistId;
         toUrl: (id: PlaylistId) => string;
     };
     export type VideoApiData = youtube_v3.Schema$Video;

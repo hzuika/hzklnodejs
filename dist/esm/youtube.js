@@ -9,7 +9,7 @@ export var Youtube;
         validLength: 11,
         new: (id) => {
             if (!Youtube.VideoId.validate(id)) {
-                throw new Error(`${id} is not valid.`);
+                throw new Error(`${id} is invalid.`);
             }
             return id;
         },
@@ -31,7 +31,7 @@ export var Youtube;
         validLength: 24,
         new: (id) => {
             if (!Youtube.ChannelId.validate(id)) {
-                throw new Error(`${id} is not valid.`);
+                throw new Error(`${id} is invalid.`);
             }
             return id;
         },
@@ -53,7 +53,7 @@ export var Youtube;
         validLength: 24,
         new: (id) => {
             if (!Youtube.UploadPlaylistId.validate(id)) {
-                throw new Error(`${id} is not valid.`);
+                throw new Error(`${id} is invalid.`);
             }
             return id;
         },
@@ -72,7 +72,7 @@ export var Youtube;
         validLength: 34,
         new: (id) => {
             if (!Youtube.RegularPlaylistId.validate(id)) {
-                throw new Error(`${id} is not valid.`);
+                throw new Error(`${id} is invalid.`);
             }
             return id;
         },
@@ -83,6 +83,15 @@ export var Youtube;
     };
     Youtube.PlaylistId = {
         urlPrefix: "https://www.youtube.com/playlist?list=",
+        new: (id) => {
+            if (Youtube.UploadPlaylistId.validate(id)) {
+                return Youtube.UploadPlaylistId.new(id);
+            }
+            if (Youtube.RegularPlaylistId.validate(id)) {
+                return Youtube.RegularPlaylistId.new(id);
+            }
+            throw new Error(`${id} is invalid.`);
+        },
         toUrl: (id) => {
             return `${Youtube.PlaylistId.urlPrefix}${id}`;
         },

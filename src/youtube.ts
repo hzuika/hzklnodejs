@@ -12,7 +12,7 @@ export namespace Youtube {
 
     new: (id: string): VideoId => {
       if (!VideoId.validate(id)) {
-        throw new Error(`${id} is not valid.`);
+        throw new Error(`${id} is invalid.`);
       }
       return id as VideoId;
     },
@@ -41,7 +41,7 @@ export namespace Youtube {
 
     new: (id: string): ChannelId => {
       if (!ChannelId.validate(id)) {
-        throw new Error(`${id} is not valid.`);
+        throw new Error(`${id} is invalid.`);
       }
       return id as ChannelId;
     },
@@ -72,7 +72,7 @@ export namespace Youtube {
 
     new: (id: string): UploadPlaylistId => {
       if (!UploadPlaylistId.validate(id)) {
-        throw new Error(`${id} is not valid.`);
+        throw new Error(`${id} is invalid.`);
       }
       return id as UploadPlaylistId;
     },
@@ -100,7 +100,7 @@ export namespace Youtube {
 
     new: (id: string): RegularPlaylistId => {
       if (!RegularPlaylistId.validate(id)) {
-        throw new Error(`${id} is not valid.`);
+        throw new Error(`${id} is invalid.`);
       }
       return id as RegularPlaylistId;
     },
@@ -116,6 +116,17 @@ export namespace Youtube {
   export type PlaylistId = UploadPlaylistId | RegularPlaylistId;
   export const PlaylistId = {
     urlPrefix: "https://www.youtube.com/playlist?list=",
+
+    new: (id: string): PlaylistId => {
+      if (UploadPlaylistId.validate(id)) {
+        return UploadPlaylistId.new(id);
+      }
+      if (RegularPlaylistId.validate(id)) {
+        return RegularPlaylistId.new(id);
+      }
+      throw new Error(`${id} is invalid.`);
+    },
+
     toUrl: (id: PlaylistId): string => {
       return `${PlaylistId.urlPrefix}${id}`;
     },
