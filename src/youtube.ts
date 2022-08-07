@@ -21,16 +21,16 @@ export namespace Youtube {
       return id.length === VideoId.validLength;
     },
 
-    toUrl: (id: VideoId): string => {
-      return `${VideoId.urlPrefix}${id}`;
+    toUrl: (id: string): string => {
+      return `${VideoId.urlPrefix}${VideoId.new(id)}`;
     },
 
-    toShortUrl: (id: VideoId): string => {
-      return `${VideoId.shortUrlPrefix}${id}`;
+    toShortUrl: (id: string): string => {
+      return `${VideoId.shortUrlPrefix}${VideoId.new(id)}`;
     },
 
-    toThumbnail: (id: VideoId): string => {
-      return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+    toThumbnail: (id: string): string => {
+      return `https://i.ytimg.com/vi/${VideoId.new(id)}/hqdefault.jpg`;
     },
   };
 
@@ -50,12 +50,12 @@ export namespace Youtube {
       return id.substring(0, 2) === "UC" && id.length === ChannelId.validLength;
     },
 
-    toUrl: (id: ChannelId): string => {
-      return `${ChannelId.urlPrefix}${id}`;
+    toUrl: (id: string): string => {
+      return `${ChannelId.urlPrefix}${ChannelId.new(id)}`;
     },
 
-    toPlaylistId: (id: ChannelId): UploadPlaylistId => {
-      return UploadPlaylistId.new(replaceString(id, 1, "U"));
+    toPlaylistId: (id: string): UploadPlaylistId => {
+      return UploadPlaylistId.new(replaceString(ChannelId.new(id), 1, "U"));
     },
 
     searchFromText(text: string) {
@@ -84,8 +84,8 @@ export namespace Youtube {
       );
     },
 
-    toChannelId: (id: UploadPlaylistId): ChannelId => {
-      return ChannelId.new(replaceString(id, 1, "C"));
+    toChannelId: (id: string): ChannelId => {
+      return ChannelId.new(replaceString(UploadPlaylistId.new(id), 1, "C"));
     },
   };
 
@@ -106,10 +106,7 @@ export namespace Youtube {
     },
 
     validate: (id: string): id is RegularPlaylistId => {
-      return (
-        id.substring(0, 2) === "PL" &&
-        id.length === RegularPlaylistId.validLength
-      );
+      return id.length === RegularPlaylistId.validLength;
     },
   };
 
@@ -127,8 +124,8 @@ export namespace Youtube {
       throw new Error(`${id} is invalid.`);
     },
 
-    toUrl: (id: PlaylistId): string => {
-      return `${PlaylistId.urlPrefix}${id}`;
+    toUrl: (id: string): string => {
+      return `${PlaylistId.urlPrefix}${PlaylistId.new(id)}`;
     },
   };
 

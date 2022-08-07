@@ -9,9 +9,9 @@ export declare namespace Youtube {
         validLength: number;
         new: (id: string) => VideoId;
         validate: (id: string) => id is VideoId;
-        toUrl: (id: VideoId) => string;
-        toShortUrl: (id: VideoId) => string;
-        toThumbnail: (id: VideoId) => string;
+        toUrl: (id: string) => string;
+        toShortUrl: (id: string) => string;
+        toThumbnail: (id: string) => string;
     };
     export type ChannelId = Opaque<string, "ChannelId">;
     export const ChannelId: {
@@ -19,8 +19,8 @@ export declare namespace Youtube {
         validLength: number;
         new: (id: string) => ChannelId;
         validate: (id: string) => id is ChannelId;
-        toUrl: (id: ChannelId) => string;
-        toPlaylistId: (id: ChannelId) => UploadPlaylistId;
+        toUrl: (id: string) => string;
+        toPlaylistId: (id: string) => UploadPlaylistId;
         searchFromText(text: string): ChannelId[];
     };
     export type UploadPlaylistId = Opaque<string, "UploadPlaylistId">;
@@ -28,7 +28,7 @@ export declare namespace Youtube {
         validLength: number;
         new: (id: string) => UploadPlaylistId;
         validate: (id: string) => id is UploadPlaylistId;
-        toChannelId: (id: UploadPlaylistId) => ChannelId;
+        toChannelId: (id: string) => ChannelId;
     };
     export type PlaylistItemId = Opaque<string, "PlaylistItemId">;
     export const PlaylistItemId: {
@@ -44,7 +44,7 @@ export declare namespace Youtube {
     export const PlaylistId: {
         urlPrefix: string;
         new: (id: string) => PlaylistId;
-        toUrl: (id: PlaylistId) => string;
+        toUrl: (id: string) => string;
     };
     export type VideoApiData = youtube_v3.Schema$Video;
     export type ChannelApiData = youtube_v3.Schema$Channel;

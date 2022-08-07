@@ -17,13 +17,13 @@ export var Youtube;
             return id.length === Youtube.VideoId.validLength;
         },
         toUrl: (id) => {
-            return `${Youtube.VideoId.urlPrefix}${id}`;
+            return `${Youtube.VideoId.urlPrefix}${Youtube.VideoId.new(id)}`;
         },
         toShortUrl: (id) => {
-            return `${Youtube.VideoId.shortUrlPrefix}${id}`;
+            return `${Youtube.VideoId.shortUrlPrefix}${Youtube.VideoId.new(id)}`;
         },
         toThumbnail: (id) => {
-            return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+            return `https://i.ytimg.com/vi/${Youtube.VideoId.new(id)}/hqdefault.jpg`;
         },
     };
     Youtube.ChannelId = {
@@ -39,10 +39,10 @@ export var Youtube;
             return id.substring(0, 2) === "UC" && id.length === Youtube.ChannelId.validLength;
         },
         toUrl: (id) => {
-            return `${Youtube.ChannelId.urlPrefix}${id}`;
+            return `${Youtube.ChannelId.urlPrefix}${Youtube.ChannelId.new(id)}`;
         },
         toPlaylistId: (id) => {
-            return Youtube.UploadPlaylistId.new(replaceString(id, 1, "U"));
+            return Youtube.UploadPlaylistId.new(replaceString(Youtube.ChannelId.new(id), 1, "U"));
         },
         searchFromText(text) {
             const searchString = /https:\/\/www.youtube.com\/channel\/(.{24})/g;
@@ -62,7 +62,7 @@ export var Youtube;
                 id.length === Youtube.UploadPlaylistId.validLength);
         },
         toChannelId: (id) => {
-            return Youtube.ChannelId.new(replaceString(id, 1, "C"));
+            return Youtube.ChannelId.new(replaceString(Youtube.UploadPlaylistId.new(id), 1, "C"));
         },
     };
     Youtube.PlaylistItemId = {
@@ -77,8 +77,7 @@ export var Youtube;
             return id;
         },
         validate: (id) => {
-            return (id.substring(0, 2) === "PL" &&
-                id.length === Youtube.RegularPlaylistId.validLength);
+            return id.length === Youtube.RegularPlaylistId.validLength;
         },
     };
     Youtube.PlaylistId = {
@@ -93,7 +92,7 @@ export var Youtube;
             throw new Error(`${id} is invalid.`);
         },
         toUrl: (id) => {
-            return `${Youtube.PlaylistId.urlPrefix}${id}`;
+            return `${Youtube.PlaylistId.urlPrefix}${Youtube.PlaylistId.new(id)}`;
         },
     };
     Youtube.VideoApiData = {
