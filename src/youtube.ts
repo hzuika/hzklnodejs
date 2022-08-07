@@ -576,4 +576,12 @@ export namespace Youtube {
       );
     }
   }
+  export const CustromUrl = {
+    prefix: "https://www.youtube.com/c/",
+    new: (text: string) => `${CustromUrl.prefix}${text}`,
+    searchFromText: (text: string) => {
+      const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n \u3000]+/g;
+      return text.match(customUrl) ?? [];
+    },
+  };
 }

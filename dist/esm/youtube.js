@@ -315,4 +315,12 @@ export var Youtube;
         }
     }
     Youtube.Api = Api;
+    Youtube.CustromUrl = {
+        prefix: "https://www.youtube.com/c/",
+        new: (text) => `${Youtube.CustromUrl.prefix}${text}`,
+        searchFromText: (text) => {
+            const customUrl = /https:\/\/www.youtube.com\/c\/[^\r\n \u3000]+/g;
+            return text.match(customUrl) ?? [];
+        },
+    };
 })(Youtube || (Youtube = {}));

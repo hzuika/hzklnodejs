@@ -145,6 +145,11 @@ export declare namespace Youtube {
         processVideoList(videoIdList: VideoId[], callback: (dataList: VideoApiData[]) => void, part?: (keyof VideoApiData)[]): Promise<void[]>;
         processChannelList(channelIdList: ChannelId[], callback: (dataList: ChannelApiData[]) => void, part?: (keyof ChannelApiData)[]): Promise<void[]>;
     }
+    export const CustromUrl: {
+        prefix: string;
+        new: (text: string) => string;
+        searchFromText: (text: string) => RegExpMatchArray;
+    };
     export {};
 }
 //# sourceMappingURL=youtube.d.ts.map
