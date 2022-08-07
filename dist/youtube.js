@@ -295,11 +295,11 @@ var Youtube;
             }
         }
         // PlaylistItem API Data に対して処理を行う
-        async processPlaylistItemList(playlistId, callback, part = Youtube.PlaylistItemApiData.partList) {
+        processPlaylistItemList(playlistId, callback, part = Youtube.PlaylistItemApiData.partList) {
             return this.#processFromAsyncGenerator(this.getPlaylistItemListAsyncGenerator(playlistId, part), callback);
         }
         // Playlist API Data に対して処理を行う
-        async processPlaylistList(channelId, callback, part = Youtube.PlaylistApiData.partList) {
+        processPlaylistList(channelId, callback, part = Youtube.PlaylistApiData.partList) {
             return this.#processFromAsyncGenerator(this.getPlaylistListAsyncGenerator(channelId, part), callback);
         }
         // Generator の配列の各 for await 内で callback を実行する
@@ -313,8 +313,8 @@ var Youtube;
             return this.#processFromAsyncGeneratorList(this.getVideoListAsyncGeneratorList(videoIdList, part), callback);
         }
         // Channel API Data に対して処理を行う
-        async processChannelList(channelIdList, callback, part = Youtube.ChannelApiData.partList) {
-            this.#processFromAsyncGeneratorList(this.getChannelListAsyncGeneratorList(channelIdList, part), callback);
+        processChannelList(channelIdList, callback, part = Youtube.ChannelApiData.partList) {
+            return this.#processFromAsyncGeneratorList(this.getChannelListAsyncGeneratorList(channelIdList, part), callback);
         }
     }
     Youtube.Api = Api;

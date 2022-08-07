@@ -143,7 +143,7 @@ export declare namespace Youtube {
         processPlaylistItemList(playlistId: PlaylistId, callback: (dataList: PlaylistItemApiData[]) => void, part?: (keyof PlaylistItemApiData)[]): Promise<void>;
         processPlaylistList(channelId: ChannelId, callback: (dataList: PlaylistApiData[]) => void, part?: (keyof PlaylistApiData)[]): Promise<void>;
         processVideoList(videoIdList: VideoId[], callback: (dataList: VideoApiData[]) => void, part?: (keyof VideoApiData)[]): Promise<void[]>;
-        processChannelList(channelIdList: ChannelId[], callback: (dataList: ChannelApiData[]) => void, part?: (keyof ChannelApiData)[]): Promise<void>;
+        processChannelList(channelIdList: ChannelId[], callback: (dataList: ChannelApiData[]) => void, part?: (keyof ChannelApiData)[]): Promise<void[]>;
     }
     export {};
 }

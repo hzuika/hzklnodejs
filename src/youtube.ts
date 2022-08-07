@@ -517,7 +517,7 @@ export namespace Youtube {
     }
 
     // PlaylistItem API Data に対して処理を行う
-    async processPlaylistItemList(
+    processPlaylistItemList(
       playlistId: PlaylistId,
       callback: (dataList: PlaylistItemApiData[]) => void,
       part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
@@ -529,7 +529,7 @@ export namespace Youtube {
     }
 
     // Playlist API Data に対して処理を行う
-    async processPlaylistList(
+    processPlaylistList(
       channelId: ChannelId,
       callback: (dataList: PlaylistApiData[]) => void,
       part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
@@ -565,12 +565,12 @@ export namespace Youtube {
     }
 
     // Channel API Data に対して処理を行う
-    async processChannelList(
+    processChannelList(
       channelIdList: ChannelId[],
       callback: (dataList: ChannelApiData[]) => void,
       part: (keyof ChannelApiData)[] = ChannelApiData.partList
     ) {
-      this.#processFromAsyncGeneratorList(
+      return this.#processFromAsyncGeneratorList(
         this.getChannelListAsyncGeneratorList(channelIdList, part),
         callback
       );
