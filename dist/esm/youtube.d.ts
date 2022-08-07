@@ -136,9 +136,13 @@ export declare namespace Youtube {
         constructor(apiKey: string);
         getPlaylistItemResponseAsyncGenerator(playlistId: PlaylistId): AsyncGenerator<youtube_v3.Schema$PlaylistItemListResponse, void, unknown>;
         getPlaylistResponseAsyncGenerator(channelId: ChannelId): AsyncGenerator<youtube_v3.Schema$PlaylistListResponse, void, unknown>;
+        getPlaylistItemListAsyncGenerator(playlistId: PlaylistId, part?: (keyof PlaylistItemApiData)[]): AsyncGenerator<youtube_v3.Schema$PlaylistItem[], void, unknown>;
+        getPlaylistListAsyncGenerator(channelId: ChannelId, part?: (keyof PlaylistApiData)[]): AsyncGenerator<youtube_v3.Schema$Playlist[], void, unknown>;
+        getVideoListAsyncGeneratorList(videoIdList: VideoId[], part?: (keyof VideoApiData)[]): AsyncGenerator<youtube_v3.Schema$Video[], void, unknown>[];
+        getChannelListAsyncGeneratorList(channelIdList: ChannelId[], part?: (keyof ChannelApiData)[]): AsyncGenerator<youtube_v3.Schema$Channel[], void, unknown>[];
         processPlaylistItemList(playlistId: PlaylistId, callback: (dataList: PlaylistItemApiData[]) => void, part?: (keyof PlaylistItemApiData)[]): Promise<void>;
         processPlaylistList(channelId: ChannelId, callback: (dataList: PlaylistApiData[]) => void, part?: (keyof PlaylistApiData)[]): Promise<void>;
-        processVideoList(videoIdList: VideoId[], callback: (dataList: VideoApiData[]) => void, part?: (keyof VideoApiData)[]): Promise<void>;
+        processVideoList(videoIdList: VideoId[], callback: (dataList: VideoApiData[]) => void, part?: (keyof VideoApiData)[]): Promise<void[]>;
         processChannelList(channelIdList: ChannelId[], callback: (dataList: ChannelApiData[]) => void, part?: (keyof ChannelApiData)[]): Promise<void>;
     }
     export {};

@@ -427,7 +427,7 @@ export namespace Youtube {
     }
 
     // PlaylistItem API の Generator
-    #getPlaylistItemListAsyncGenerator(
+    getPlaylistItemListAsyncGenerator(
       playlistId: PlaylistId,
       part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
     ) {
@@ -444,7 +444,7 @@ export namespace Youtube {
     }
 
     // Playlist API の Generator
-    #getPlaylistListAsyncGenerator(
+    getPlaylistListAsyncGenerator(
       channelId: ChannelId,
       part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
     ) {
@@ -465,13 +465,15 @@ export namespace Youtube {
       T extends Extract<ApiType, "Video" | "Channel">
     >(idList: Id<T>[], apiFunction: ApiFunction<T>, params: ApiParameter<T>) {
       return getChunkFromArray(idList, 50).map((idList50) => {
-        params.id = idList50;
-        return this.#getDataListAsyncGenerator(apiFunction, params);
+        return this.#getDataListAsyncGenerator(apiFunction, {
+          id: idList50,
+          ...params,
+        });
       });
     }
 
     // Video API の Generator
-    #getVideoListAsyncGeneratorList(
+    getVideoListAsyncGeneratorList(
       videoIdList: VideoId[],
       part: (keyof VideoApiData)[] = VideoApiData.partList
     ) {
@@ -488,7 +490,7 @@ export namespace Youtube {
     }
 
     // Channel API の Generator
-    #getChannelListAsyncGeneratorList(
+    getChannelListAsyncGeneratorList(
       channelIdList: ChannelId[],
       part: (keyof ChannelApiData)[] = ChannelApiData.partList
     ) {
@@ -510,7 +512,7 @@ export namespace Youtube {
       callback: (data: T) => void
     ) {
       for await (const data of asyncGenerator) {
-        callback(data);
+        await callback(data);
       }
     }
 
@@ -521,7 +523,7 @@ export namespace Youtube {
       part: (keyof PlaylistItemApiData)[] = PlaylistItemApiData.partList
     ) {
       return this.#processFromAsyncGenerator(
-        this.#getPlaylistItemListAsyncGenerator(playlistId, part),
+        this.getPlaylistItemListAsyncGenerator(playlistId, part),
         callback
       );
     }
@@ -533,7 +535,7 @@ export namespace Youtube {
       part: (keyof PlaylistApiData)[] = PlaylistApiData.partList
     ) {
       return this.#processFromAsyncGenerator(
-        this.#getPlaylistListAsyncGenerator(channelId, part),
+        this.getPlaylistListAsyncGenerator(channelId, part),
         callback
       );
     }
@@ -543,21 +545,21 @@ export namespace Youtube {
       asyncGeneratorList: AsyncGenerator<T>[],
       callback: (data: T) => void
     ) {
-      Promise.all(
-        asyncGeneratorList.map((asyncGenerator) => {
-          this.#processFromAsyncGenerator(asyncGenerator, callback);
+      return Promise.all(
+        asyncGeneratorList.map(async (asyncGenerator) => {
+          await this.#processFromAsyncGenerator(asyncGenerator, callback);
         })
       );
     }
 
     // Video API Data に対して処理を行う
-    async processVideoList(
+    processVideoList(
       videoIdList: VideoId[],
       callback: (dataList: VideoApiData[]) => void,
       part: (keyof VideoApiData)[] = VideoApiData.partList
     ) {
       return this.#processFromAsyncGeneratorList(
-        this.#getVideoListAsyncGeneratorList(videoIdList, part),
+        this.getVideoListAsyncGeneratorList(videoIdList, part),
         callback
       );
     }
@@ -569,7 +571,7 @@ export namespace Youtube {
       part: (keyof ChannelApiData)[] = ChannelApiData.partList
     ) {
       this.#processFromAsyncGeneratorList(
-        this.#getChannelListAsyncGeneratorList(channelIdList, part),
+        this.getChannelListAsyncGeneratorList(channelIdList, part),
         callback
       );
     }
