@@ -170,7 +170,7 @@ export namespace Youtube {
     getChannelTitle: ApiDataExtractFunction<"Video">;
     getTagList: ApiDataExtractFunction<"Video", string[]>;
     getCategoryId: ApiDataExtractFunction<"Video">;
-    getIsLive: ApiDataExtractFunction<"Video">;
+    getIsLive: ApiDataExtractFunction<"Video", boolean>;
     getDuration: ApiDataExtractFunction<"Video">;
     getHasCaption: ApiDataExtractFunction<"Video">;
     getViewCount: ApiDataExtractFunction<"Video">;
@@ -210,7 +210,15 @@ export namespace Youtube {
     getCommentCount: (data) => data.statistics?.commentCount,
     getCategoryId: (data) => data.snippet?.categoryId,
     getTagList: (data) => data.snippet?.tags,
-    getIsLive: (data) => data.snippet?.liveBroadcastContent,
+    getIsLive: (data) => {
+      if (data.snippet?.liveBroadcastContent == "live") {
+        return true;
+      }
+      if (data.snippet?.liveBroadcastContent == "none") {
+        return false;
+      }
+      return false;
+    },
     getHasCaption: (data) => data.contentDetails?.caption,
     getTopicIdList: (data) => data.topicDetails?.topicIds,
     getTopicCategoryList: (data) => data.topicDetails?.topicCategories,

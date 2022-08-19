@@ -127,7 +127,15 @@ var Youtube;
         getCommentCount: (data) => data.statistics?.commentCount,
         getCategoryId: (data) => data.snippet?.categoryId,
         getTagList: (data) => data.snippet?.tags,
-        getIsLive: (data) => data.snippet?.liveBroadcastContent,
+        getIsLive: (data) => {
+            if (data.snippet?.liveBroadcastContent == "live") {
+                return true;
+            }
+            if (data.snippet?.liveBroadcastContent == "none") {
+                return false;
+            }
+            return false;
+        },
         getHasCaption: (data) => data.contentDetails?.caption,
         getTopicIdList: (data) => data.topicDetails?.topicIds,
         getTopicCategoryList: (data) => data.topicDetails?.topicCategories,

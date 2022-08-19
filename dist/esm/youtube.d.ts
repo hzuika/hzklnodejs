@@ -65,7 +65,7 @@ export declare namespace Youtube {
         getChannelTitle: ApiDataExtractFunction<"Video">;
         getTagList: ApiDataExtractFunction<"Video", string[]>;
         getCategoryId: ApiDataExtractFunction<"Video">;
-        getIsLive: ApiDataExtractFunction<"Video">;
+        getIsLive: ApiDataExtractFunction<"Video", boolean>;
         getDuration: ApiDataExtractFunction<"Video">;
         getHasCaption: ApiDataExtractFunction<"Video">;
         getViewCount: ApiDataExtractFunction<"Video">;
