@@ -9,6 +9,8 @@ import {
 } from "@notionhq/client/build/src/api-endpoints";
 
 export namespace Notion {
+  export type MakeDatabaseParameter = CreateDatabaseParameters;
+  export type MakePageParameter = CreatePageParameters;
   export class Api {
     private readonly client: Client;
 

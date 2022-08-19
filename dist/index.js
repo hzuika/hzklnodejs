@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Notion = exports.Youtube = exports.YoutubeLegacy = exports.sortJson = exports.sleep = exports.equalArray = exports.getJapaneseIsoStringFromUtcIsoString = exports.removeDuplicatesFromArray = exports.replaceString = exports.getTsvFromJson = exports.getCsvFromJson = exports.getChunkFromArray = exports.getHtmlFromUrl = exports.getJsonFromString = exports.getStringFromJson = exports.getFileNameWithoutExtension = exports.getFileName = exports.getExtension = exports.getDirectoryName = exports.writeFileJson = exports.writeFileBinary = exports.writeFileText = exports.readFileJson = exports.readFileBinary = exports.readFileText = exports.makeDirectory = exports.existPath = void 0;
+exports.Notion = exports.NotionLegacy = exports.Youtube = exports.YoutubeLegacy = exports.sortJson = exports.sleep = exports.equalArray = exports.getJapaneseIsoStringFromUtcIsoString = exports.removeDuplicatesFromArray = exports.replaceString = exports.getTsvFromJson = exports.getCsvFromJson = exports.getChunkFromArray = exports.getHtmlFromUrl = exports.getJsonFromString = exports.getStringFromJson = exports.getFileNameWithoutExtension = exports.getFileName = exports.getExtension = exports.getDirectoryName = exports.writeFileJson = exports.writeFileBinary = exports.writeFileText = exports.readFileJson = exports.readFileBinary = exports.readFileText = exports.makeDirectory = exports.existPath = void 0;
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
 const youtube_1 = require("@googleapis/youtube");
@@ -12,6 +12,8 @@ const axios_1 = __importDefault(require("axios"));
 const client_1 = require("@notionhq/client");
 const youtube_2 = require("./youtube");
 Object.defineProperty(exports, "Youtube", { enumerable: true, get: function () { return youtube_2.Youtube; } });
+const notion_1 = require("./notion");
+Object.defineProperty(exports, "Notion", { enumerable: true, get: function () { return notion_1.Notion; } });
 const existPath = async (filepath) => {
     try {
         await fs_1.promises.access(filepath);
@@ -518,7 +520,7 @@ class YoutubeLegacy {
     }
 }
 exports.YoutubeLegacy = YoutubeLegacy;
-class Notion {
+class NotionLegacy {
     #notion;
     constructor(apiKey) {
         this.#notion = new client_1.Client({
@@ -563,4 +565,4 @@ class Notion {
         return response.id.replace(/-/g, "");
     }
 }
-exports.Notion = Notion;
+exports.NotionLegacy = NotionLegacy;

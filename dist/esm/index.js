@@ -5,6 +5,7 @@ const youtubeClient = youtube("v3");
 import axios from "axios";
 import { Client } from "@notionhq/client";
 import { Youtube } from "./youtube";
+import { Notion } from "./notion";
 const existPath = async (filepath) => {
     try {
         await fs.access(filepath);
@@ -486,7 +487,7 @@ class YoutubeLegacy {
         return apiData;
     }
 }
-class Notion {
+class NotionLegacy {
     #notion;
     constructor(apiKey) {
         this.#notion = new Client({
@@ -531,4 +532,4 @@ class Notion {
         return response.id.replace(/-/g, "");
     }
 }
-export { existPath, makeDirectory, readFileText, readFileBinary, readFileJson, writeFileText, writeFileBinary, writeFileJson, getDirectoryName, getExtension, getFileName, getFileNameWithoutExtension, getStringFromJson, getJsonFromString, getHtmlFromUrl, getChunkFromArray, getCsvFromJson, getTsvFromJson, replaceString, removeDuplicatesFromArray, getJapaneseIsoStringFromUtcIsoString, equalArray, sleep, sortJson, YoutubeLegacy, Youtube, Notion, };
+export { existPath, makeDirectory, readFileText, readFileBinary, readFileJson, writeFileText, writeFileBinary, writeFileJson, getDirectoryName, getExtension, getFileName, getFileNameWithoutExtension, getStringFromJson, getJsonFromString, getHtmlFromUrl, getChunkFromArray, getCsvFromJson, getTsvFromJson, replaceString, removeDuplicatesFromArray, getJapaneseIsoStringFromUtcIsoString, equalArray, sleep, sortJson, YoutubeLegacy, Youtube, NotionLegacy, Notion, };

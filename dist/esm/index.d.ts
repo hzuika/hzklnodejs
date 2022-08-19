@@ -2,6 +2,7 @@
 import { youtube_v3 } from "@googleapis/youtube";
 import { CreateDatabaseParameters, CreateDatabaseResponse, CreatePageParameters, CreatePageResponse, GetDatabaseParameters, GetDatabaseResponse, GetPageParameters, GetPageResponse, UpdateDatabaseResponse, UpdatePageParameters, UpdatePageResponse } from "@notionhq/client/build/src/api-endpoints";
 import { Youtube } from "./youtube";
+import { Notion } from "./notion";
 declare const existPath: (filepath: string) => Promise<boolean>;
 declare const makeDirectory: (dirpath: string) => Promise<string | undefined>;
 declare const readFileText: (filepath: string) => Promise<string>;
@@ -75,7 +76,7 @@ declare class YoutubeLegacy {
     static getPlaylistUrlFromPlaylistId(playlistId: string): string;
     static removeEtagFromApiData(apiData: YoutubeApiData): YoutubeApiData;
 }
-declare class Notion {
+declare class NotionLegacy {
     #private;
     constructor(apiKey: string);
     makeDatabase(query: CreateDatabaseParameters): Promise<CreateDatabaseResponse>;
@@ -88,5 +89,5 @@ declare class Notion {
     static getIdFromUrl(urlString: string): string;
     static getIdFromApiResponse(response: GetPageResponse | GetDatabaseResponse | CreatePageResponse | CreateDatabaseResponse | UpdatePageResponse | UpdateDatabaseResponse): string;
 }
-export { existPath, makeDirectory, readFileText, readFileBinary, readFileJson, writeFileText, writeFileBinary, writeFileJson, getDirectoryName, getExtension, getFileName, getFileNameWithoutExtension, getStringFromJson, getJsonFromString, getHtmlFromUrl, getChunkFromArray, getCsvFromJson, getTsvFromJson, replaceString, removeDuplicatesFromArray, getJapaneseIsoStringFromUtcIsoString, equalArray, sleep, sortJson, YoutubeLegacy, Youtube, Notion, };
+export { existPath, makeDirectory, readFileText, readFileBinary, readFileJson, writeFileText, writeFileBinary, writeFileJson, getDirectoryName, getExtension, getFileName, getFileNameWithoutExtension, getStringFromJson, getJsonFromString, getHtmlFromUrl, getChunkFromArray, getCsvFromJson, getTsvFromJson, replaceString, removeDuplicatesFromArray, getJapaneseIsoStringFromUtcIsoString, equalArray, sleep, sortJson, YoutubeLegacy, Youtube, NotionLegacy, Notion, };
 //# sourceMappingURL=index.d.ts.map

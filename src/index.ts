@@ -19,6 +19,7 @@ import {
   UpdatePageResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import { Youtube } from "./youtube";
+import { Notion } from "./notion";
 
 const existPath = async (filepath: string) => {
   try {
@@ -762,7 +763,7 @@ class YoutubeLegacy {
   }
 }
 
-class Notion {
+class NotionLegacy {
   #notion;
 
   constructor(apiKey: string) {
@@ -853,5 +854,6 @@ export {
   sortJson,
   YoutubeLegacy,
   Youtube,
+  NotionLegacy,
   Notion,
 };

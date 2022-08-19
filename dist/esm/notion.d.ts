@@ -1,5 +1,7 @@
 import { CreateDatabaseParameters, CreatePageParameters, GetDatabaseParameters, GetDatabaseResponse, GetPageParameters, GetPageResponse } from "@notionhq/client/build/src/api-endpoints";
 export declare namespace Notion {
+    type MakeDatabaseParameter = CreateDatabaseParameters;
+    type MakePageParameter = CreatePageParameters;
     class Api {
         private readonly client;
         constructor(apiKey: string);
