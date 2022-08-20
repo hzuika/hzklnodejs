@@ -41,6 +41,13 @@ var Notion;
             }
             return this.client.pages.retrieve(query);
         }
+        async getChildren(id) {
+            const query = {
+                block_id: id,
+                page_size: 100,
+            };
+            return this.client.blocks.children.list(query);
+        }
     }
     Notion.Api = Api;
 })(Notion = exports.Notion || (exports.Notion = {}));

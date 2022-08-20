@@ -11,6 +11,7 @@ export declare namespace Notion {
         getDatabase(id: string): Promise<GetDatabaseResponse>;
         getPage(query: GetPageParameters): Promise<GetPageResponse>;
         getPage(id: string): Promise<GetPageResponse>;
+        getChildren(id: string): Promise<import("@notionhq/client/build/src/api-endpoints").ListBlockChildrenResponse>;
     }
 }
 //# sourceMappingURL=notion.d.ts.map

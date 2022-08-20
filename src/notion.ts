@@ -57,5 +57,13 @@ export namespace Notion {
       }
       return this.client.pages.retrieve(query);
     }
+
+    async getChildren(id: string) {
+      const query = {
+        block_id: id,
+        page_size: 100,
+      };
+      return this.client.blocks.children.list(query);
+    }
   }
 }
