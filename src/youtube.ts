@@ -314,7 +314,7 @@ export namespace Youtube {
     getVideoId: (data) => data.contentDetails?.videoId,
     getVideoChannelId: (data) => data.snippet?.videoOwnerChannelId,
     getVideoChannelTitle: (data) => data.snippet?.videoOwnerChannelTitle,
-    getVideoPublishedAt: (data) => data.contentDetails?.endAt,
+    getVideoPublishedAt: (data) => data.contentDetails?.videoPublishedAt,
     getTitle: (data) => data.snippet?.title,
     getDescription: (data) => data.snippet?.description,
     getThumbnail: (data) => data.snippet?.thumbnails?.high?.url,
